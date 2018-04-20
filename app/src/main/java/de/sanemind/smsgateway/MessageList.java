@@ -36,6 +36,8 @@ public class MessageList {
         //message.getChat().setMessages(messages);
         BaseChat chat = message.getChat();
         chat.addMessage(message, position);
+        if (position == -1)
+            position = 0;
 
         List<BaseMessage> messages = chat.getMessages();
         for (int i = position; i < messages.size(); i++) {

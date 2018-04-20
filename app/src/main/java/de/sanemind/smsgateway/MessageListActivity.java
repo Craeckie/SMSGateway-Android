@@ -127,6 +127,10 @@ public class MessageListActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String text = mChatBox.getText().toString();
+                if (text.isEmpty()) {
+                    Toast.makeText(getApplicationContext(), "Please enter a message", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 if (currentChat != null) {
                     String serviceID = "TG";
                     if (standardService != null)
