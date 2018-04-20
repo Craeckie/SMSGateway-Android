@@ -114,7 +114,10 @@ public abstract class BaseChat implements Comparable<BaseChat> {
     public boolean equals(Object obj) {
         if (obj instanceof BaseChat) {
             BaseChat chat = (BaseChat) obj;
-            return chat.getName().equals(getName()) && chat.getIdentifier().equals(getIdentifier());
+            if (obj instanceof UserChat && this instanceof UserChat)
+                return ((UserChat)obj).equals((UserChat)this);
+            else
+                return chat.getName().equals(getName()) && chat.getIdentifier().equals(getIdentifier());
         }
 
         return super.equals(obj);

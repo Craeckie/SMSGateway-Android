@@ -1,12 +1,16 @@
 package de.sanemind.smsgateway.model;
 
+import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.telephony.PhoneNumberUtils;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import de.sanemind.smsgateway.Utils;
 
 public class UserChat extends BaseChat {
     public UserChat(String name, String nameIdentifier) {
@@ -25,7 +29,7 @@ public class UserChat extends BaseChat {
         return phoneNumbers;
     }
 
-    public void addPhoneNumber(String phoneNumber, int priority) {
+    public void addPhoneNumber(Context context, String phoneNumber, int priority) {
         PhoneNumber curNum = null;
         for (PhoneNumber num : phoneNumbers) {
             if (num.equals(phoneNumber)) {
@@ -34,7 +38,7 @@ public class UserChat extends BaseChat {
             }
         }
         if (curNum == null) {
-            curNum = new PhoneNumber(phoneNumber, priority);
+            curNum = new PhoneNumber(context, phoneNumber, priority);
             this.phoneNumbers.add(curNum);
         }
         if (priority < mostImportantPriority) {
@@ -43,8 +47,8 @@ public class UserChat extends BaseChat {
         }
     }
 
-    public boolean hasPhoneNumber(String phoneNumber) {
-        return phoneNumbers.contains(new PhoneNumber(phoneNumber, -1));
+    public boolean hasPhoneNumber(Context context, String phoneNumber) {
+        return phoneNumbers.contains(new PhoneNumber(context, phoneNumber, -1));
     }
 
     public PhoneNumber getMostImportantPhoneNumber() {
@@ -79,7 +83,12 @@ public class UserChat extends BaseChat {
         private String number;
         private int priority;
 
-        public PhoneNumber(String number, int priority) {
+        public PhoneNumber(Context context, String number, int priority) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                number = PhoneNumberUtils.normalizeNumber(number);
+            }
+            if (number.startsWith("0"))
+                number = "+" + Utils.getCountryCode(context) + number.substring(1);
             this.number = number;
             this.priority = priority;
         }

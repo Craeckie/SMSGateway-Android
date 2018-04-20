@@ -1,6 +1,7 @@
 package de.sanemind.smsgateway;
 
 import android.content.Context;
+import android.telephony.PhoneNumberUtils;
 
 import java.util.Date;
 
@@ -42,10 +43,16 @@ public class GatewayUtils {
                                 messageBody,
                                 identifier,
                                 ChatList.get_or_create_group(context, groupName, groupIdentifier),
-                                ChatList.get_or_create_user(context, userName, userIdentifier),
+                                ChatList.get_or_create_user(context, userName, userIdentifier, null),
                                 isSent);
                     } else {
                         String name = address.replace('_', ' ');
+                        String phoneNumber = null;
+                        String nameIdentifier = address;
+                        if (!PhoneNumberUtils.isGlobalPhoneNumber(address)) {
+                            phoneNumber = address;
+                            nameIdentifier = null;
+                        }
                         GroupChat groupChat = ChatList.find_group(context, address);
                         if (isSent && groupChat != null) {
                             message = new GroupMessage(
@@ -53,14 +60,20 @@ public class GatewayUtils {
                                     messageBody,
                                     identifier,
                                     groupChat,
-                                    ChatList.get_or_create_user(context, name, address),
+                                    ChatList.get_or_create_user(context, name, nameIdentifier, phoneNumber),
                                     isSent);
                         } else {
+                            phoneNumber = null;
+                            nameIdentifier = address;
+                            if (PhoneNumberUtils.isGlobalPhoneNumber(address)) {
+                                phoneNumber = address;
+                                nameIdentifier = null;
+                            }
                             message = new UserMessage(
                                     date,
                                     messageBody,
                                     identifier,
-                                    ChatList.get_or_create_user(context, name, address),
+                                    ChatList.get_or_create_user(context, name, nameIdentifier, phoneNumber),
                                     isSent);
                         }
                     }

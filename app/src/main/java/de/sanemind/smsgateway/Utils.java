@@ -1,6 +1,7 @@
 package de.sanemind.smsgateway;
 
 import android.content.Context;
+import android.telephony.TelephonyManager;
 import android.text.format.DateUtils;
 
 import java.util.Calendar;
@@ -44,5 +45,24 @@ public class Utils {
 
         CharSequence testTimeStr = DateUtils.getRelativeDateTimeString(context, time, 10000, 1000000, 0);
         return timeStr;
+    }
+
+    private static String countryCode = null;
+
+    public static String getCountryCode(Context context) {
+        if (countryCode == null) {
+            TelephonyManager manager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            //getNetworkCountryIso
+            String CountryID = manager.getSimCountryIso().toUpperCase().trim();
+            String[] rl = context.getResources().getStringArray(R.array.CountryCodes);
+            for (int i = 0; i < rl.length; i++) {
+                String[] g = rl[i].split(",");
+                if (g[1].trim().equals(CountryID)) {
+                    countryCode = g[0];
+                    break;
+                }
+            }
+        }
+        return countryCode;
     }
 }

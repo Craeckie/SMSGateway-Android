@@ -44,7 +44,7 @@ public class ContactsLoader {
                     String number = chat.getName();
 
                     chat.setName(name);
-                    chat.addPhoneNumber(number, 2);
+                    chat.addPhoneNumber(context, number, 2);
                     foundContact = true;
                 }
             } catch (Exception e) {
@@ -104,7 +104,7 @@ public class ContactsLoader {
                         break;
                 }
 
-                chat.addPhoneNumber(number, priority);
+                chat.addPhoneNumber(context, number, priority);
                 foundContact = true;
             }
             phones.close();

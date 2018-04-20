@@ -24,7 +24,7 @@ public class ChatList {
         if (ChatList.isEmpty()) {
             //ChatList.add(currentUser);
             String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_phone_gateway", null);
-            GatewayUser.addPhoneNumber(gatewayNumber, 1);
+            GatewayUser.addPhoneNumber(context, gatewayNumber, 1);
             ChatList.add(GatewayUser);
         }
     }
@@ -51,31 +51,32 @@ public class ChatList {
         }
         return null;
     }
-    public static UserChat get_or_create_user(Context context, String name, String nameIdentifier) {
+    public static UserChat get_or_create_user(Context context, String name, String nameIdentifier, String phoneNumber) {
         fillIfEmpty(context);
-        if (name.contains("995")) {
-//            Log.v("SMSGateway", "Thomas");
-        }
 
         for (BaseChat chat:ChatList) {
             if (chat instanceof UserChat) {
                 UserChat user = (UserChat) chat;
-                if (user.hasPhoneNumber(name)) {
+                if (phoneNumber != null && user.hasPhoneNumber(context, phoneNumber)) {
 //                    Log.v("SMSGateway", "user");
                     return user;
                 }
-                if (user.getName().equals(name)) {
+                String currentNameIdentifier = user.getNameIdentifier();
+                if (nameIdentifier != null && currentNameIdentifier != null && currentNameIdentifier.equals(nameIdentifier)) {
+                    return user;
+                }
+                String currentName = user.getName();
+                if (name != null && currentName != null && currentName.equals(name)) {
 //                    Log.v("SMSGateway", "user");
                     return user;
                 }
             }
         }
         UserChat user = new UserChat(name, nameIdentifier);
+        if (phoneNumber != null)
+            user.addPhoneNumber(context, phoneNumber, 1);
         ContactsLoader.updateUserChat(context, user);
         ChatList.add(user);
         return user;
-    }
-    public static UserChat get_or_create_user(Context context, String name) {
-        return get_or_create_user(context, name, name);
     }
 }

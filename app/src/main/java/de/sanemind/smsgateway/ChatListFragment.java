@@ -100,7 +100,12 @@ public class ChatListFragment extends Fragment {
 
     public Intent getOpenChatIntent(BaseChat chat) {
         Intent intent = new Intent(this.getContext(), MessageListActivity.class);
-        intent.putExtra(EXTRA_CHAT, chat.getIdentifier());
+        String identifier = chat.getNameIdentifier();
+        if (identifier == null)
+            identifier = chat.getName();
+        if (identifier == null)
+            identifier = chat.getIdentifier();
+        intent.putExtra(EXTRA_CHAT, identifier);
         if (chat instanceof UserChat)
             intent.putExtra(EXTRA_CHAT_TYPE, "USER");
         else if (chat instanceof GroupChat)

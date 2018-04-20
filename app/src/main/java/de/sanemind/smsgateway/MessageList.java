@@ -34,7 +34,13 @@ public class MessageList {
 //            messages = messageList.get(message.getChat());
 
         //message.getChat().setMessages(messages);
-        message.getChat().addMessage(message, position);
+        BaseChat chat = message.getChat();
+        chat.addMessage(message, position);
+
+        List<BaseMessage> messages = chat.getMessages();
+        for (int i = position; i < messages.size(); i++) {
+            messages.get(i).setIndex(i);
+        }
     }
 
     public static BaseMessage addMessage(Context context, Date date, String body, String phoneNumber, boolean isSent) {
@@ -65,7 +71,7 @@ public class MessageList {
             }
         }
         else if (msg == null) {
-            msg = new UserMessage(date, body, "SMS", ChatList.get_or_create_user(context, phoneNumber), isSent);
+            msg = new UserMessage(date, body, "SMS", ChatList.get_or_create_user(context, null, null, phoneNumber), isSent);
         }
         MessageList.addMessage(msg);
         if (msg instanceof GroupMessage) {
@@ -155,9 +161,9 @@ public class MessageList {
                 msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent);
             }
             if (msg == null) {
-                msg = new UserMessage(date, body, "SMS", ChatList.get_or_create_user(context, address), isSent);
+                msg = new UserMessage(date, body, "SMS", ChatList.get_or_create_user(context, null, null, address), isSent);
             }
-            addMessage(msg);
+            msg.getChat().addMessage(msg, 0);
 //            messages.add(msg);
 //            if (PhoneNumberUtils.compare(from, GatewayNumber)) {
 //                mMessageAdapter.getmMessageList().add(new UserMessage(body, GatewayUser, new Date()));

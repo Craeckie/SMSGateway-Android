@@ -97,14 +97,20 @@ public class MessageListActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String chatName = intent.getStringExtra(ChatListFragment.EXTRA_CHAT);
         String chatType = intent.getStringExtra(ChatListFragment.EXTRA_CHAT_TYPE);
-        if (chatType.equals("USER"))
-            currentChat = ChatList.get_or_create_user(getApplicationContext(), chatName);
-        else if (chatType.equals("GROUP"))
+        if (chatType.equals("USER")) {
+            currentChat = ChatList.get_or_create_user(getApplicationContext(), chatName, chatName, chatName);
+            setTitle(currentChat.getName() + "(" + currentChat.getIdentifier() + ")");
+        }
+        else if (chatType.equals("GROUP")) {
             currentChat = ChatList.get_or_create_group(getApplicationContext(), chatName, chatName);
+            setTitle(currentChat.getName());
+        }
         else
             throw new IllegalArgumentException("Unknown chat type!");
 
         setTitle(currentChat.getName() + "(" + currentChat.getIdentifier() + ")");
+
+
 
         messageAdapter = new MessageListAdapter(this, currentChat);
 
@@ -139,7 +145,7 @@ public class MessageListActivity extends AppCompatActivity {
                     Toast.makeText(inst, "Message sent to gateway!", Toast.LENGTH_SHORT).show();
 
                     String meUserName = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("edit_text_preference_name_telegram", null);
-                    UserChat meUser = ChatList.get_or_create_user(getApplicationContext(), meUserName);
+                    UserChat meUser = ChatList.get_or_create_user(getApplicationContext(), meUserName, meUserName, null);
 
                     BaseMessage chatMessage;
                     if (currentChat instanceof UserChat)

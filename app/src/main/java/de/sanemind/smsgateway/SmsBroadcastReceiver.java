@@ -50,31 +50,32 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 messageList.messageReceived(receivedMessage);
             }
             ChatListFragment chatListFragment = ChatListFragment.getInstance();
-            if (chatListFragment != null)
+            if (chatListFragment != null) {
                 chatListFragment.getChatListRecycler().updateAdapter();
-            if (receivedMessage != null  && ! receivedMessage.isSent()) {
-                Intent notificationIntent = ChatListFragment.getInstance().getOpenChatIntent(receivedMessage.getChat());
-                //notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                PendingIntent pendingIntent;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-                    stackBuilder.addNextIntentWithParentStack(notificationIntent);
-                    pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
-                } else {
-                    pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                if (receivedMessage != null && !receivedMessage.isSent()) {
+                    Intent notificationIntent = chatListFragment.getOpenChatIntent(receivedMessage.getChat());
+                    //notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    PendingIntent pendingIntent;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+                        stackBuilder.addNextIntentWithParentStack(notificationIntent);
+                        pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
+                    } else {
+                        pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    }
+
+
+                    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, NotificationChannel.DEFAULT_CHANNEL_ID)
+                            .setSmallIcon(R.drawable.ic_launcher_foreground)
+                            .setContentTitle(receivedMessage.getChat().getName())
+                            .setContentText(receivedMessage.getMessage())
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                            .setStyle(new NotificationCompat.BigTextStyle().bigText(receivedMessage.getMessage()))
+                            .setAutoCancel(true)
+                            .setContentIntent(pendingIntent);
+                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+                    notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
                 }
-
-
-                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, NotificationChannel.DEFAULT_CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_launcher_foreground)
-                        .setContentTitle(receivedMessage.getChat().getName())
-                        .setContentText(receivedMessage.getMessage())
-                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                        .setStyle(new NotificationCompat.BigTextStyle().bigText(receivedMessage.getMessage()))
-                        .setAutoCancel(true)
-                        .setContentIntent(pendingIntent);
-                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-                notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
             }
         }
     }
