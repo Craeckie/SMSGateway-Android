@@ -4,11 +4,11 @@ import java.util.Date;
 
 public class UserMessage extends BaseMessage {
     public UserMessage(Date createdAt, String message, String serviceID, UserChat user, boolean isSent) {
-        super(createdAt, message, serviceID, isSent, true);
+        super(createdAt, message, serviceID, isSent, STATUS_FORWARDED);
         this.user = user;
     }
-    public UserMessage(Date createdAt, String message, String serviceID, UserChat user, boolean isSent, boolean isReceived) {
-        super(createdAt, message, serviceID, isSent, isReceived);
+    public UserMessage(Date createdAt, String message, String serviceID, UserChat user, boolean isSent, int status) {
+        super(createdAt, message, serviceID, isSent, status);
         this.user = user;
     }
 

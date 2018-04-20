@@ -15,6 +15,10 @@ import de.sanemind.smsgateway.model.UserChat;
 
 public class ContactsLoader {
 
+    public ContactsLoader() {
+
+    }
+
     private final static String name_column = Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
             ContactsContract.Contacts.DISPLAY_NAME_PRIMARY:
             ContactsContract.Contacts.DISPLAY_NAME;

@@ -6,15 +6,17 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.telephony.PhoneNumberUtils;
-import android.widget.Toast;
 
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
+import de.sanemind.smsgateway.model.GroupMessage;
+import de.sanemind.smsgateway.model.UserChat;
 import de.sanemind.smsgateway.model.UserMessage;
 
 public class MessageList {
@@ -46,15 +48,19 @@ public class MessageList {
             for (int i = 0; i < 3; i++) {
                 BaseMessage currentMessage = chatMessages.get(i);
                 if (currentMessage.equals(msg)) {
-                    if (currentMessage.isReceived()) {
-                        msg = currentMessage;
-                        break;
+                    switch (currentMessage.getStatus()) {
+                        case BaseMessage.STATUS_SENT:
+                            currentMessage.setStatus(BaseMessage.STATUS_RECEIVED);
+                            //Toast.makeText(context, "Message forwarded to Telegram!", Toast.LENGTH_SHORT).show();
+                            return null;
+                        case BaseMessage.STATUS_RECEIVED:
+                            currentMessage.setStatus(BaseMessage.STATUS_FORWARDED);
+                            return null;
+                        case BaseMessage.STATUS_FORWARDED:
+                            msg = currentMessage;
+                            break;
                     }
-                    else {
-                        currentMessage.setReceived(true);
-                        Toast.makeText(context, "Message forwarded to Telegram!", Toast.LENGTH_SHORT).show();
-                        return null;
-                    }
+                    break;
                 }
             }
         }
@@ -62,6 +68,12 @@ public class MessageList {
             msg = new UserMessage(date, body, "SMS", ChatList.get_or_create_user(context, phoneNumber), isSent);
         }
         MessageList.addMessage(msg);
+        if (msg instanceof GroupMessage) {
+            GroupMessage groupMsg = (GroupMessage)msg;
+            UserChat user = groupMsg.getUser();
+            if (user.getMessages().size() == 0)
+                ChatList.ChatList.remove(user);
+        }
         Collections.sort(ChatList.ChatList);
 //        MessageList.sortChatMessages(msg.getChat());
         return msg;
@@ -93,6 +105,13 @@ public class MessageList {
     public static void sortChatMessages(BaseChat chat) {
 //        List<BaseMessage> messages = MessageList.messageList.get(chat);
         Collections.sort(chat.getMessages());
+
+        int index = 0;
+        for (Iterator<BaseMessage> iterator = chat.getMessages().iterator(); iterator.hasNext();) {
+            BaseMessage message = iterator.next();
+            message.setIndex(index);
+            index++;
+        }
     }
 
     public static void refreshFromSMSInbox(Context context) {
@@ -104,8 +123,12 @@ public class MessageList {
 
 //        messageList.addAll(sentMessages);
 //        messageList.addAll(receivedMessages);
-        for(BaseChat chat : ChatList.ChatList) {
-            sortChatMessages(chat);
+        for (Iterator<BaseChat> iterator = ChatList.ChatList.iterator(); iterator.hasNext();) {
+            BaseChat chat = iterator.next();
+            if (chat.getMessages().size() == 0)
+                iterator.remove();
+            else
+                sortChatMessages(chat);
         }
         Collections.sort(ChatList.ChatList);
     }

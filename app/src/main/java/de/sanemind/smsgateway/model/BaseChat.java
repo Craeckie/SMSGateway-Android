@@ -4,7 +4,6 @@ import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,7 +11,7 @@ public abstract class BaseChat implements Comparable<BaseChat> {
     protected String name;
     protected String nameIdentifier; //necessary for Telegram
 
-    private List<BaseMessage> messages;
+    private ArrayList<BaseMessage> messages;
 
     private Map<String, Integer> knownServices;
 
@@ -62,7 +61,7 @@ public abstract class BaseChat implements Comparable<BaseChat> {
         knownServices.put(message.getServiceID(), num);
     }
 
-    public List<BaseMessage> getMessages() {
+    public ArrayList<BaseMessage> getMessages() {
         return messages;
     }
 
@@ -98,12 +97,17 @@ public abstract class BaseChat implements Comparable<BaseChat> {
     @Override
     public int compareTo(@NonNull BaseChat o) {
         BaseMessage lastM1 = getLastMessage();
-        if (lastM1 == null)
-            return -1;
         BaseMessage lastM2 = o.getLastMessage();
-        if (lastM2 == null)
+        if (lastM1 == null && lastM2 == null)
+            return 0;
+        if (lastM1 == null) {
+            return -1;
+        }
+        if (lastM2 == null) {
             return 1;
-        return lastM2.getCreatedAt().compareTo(lastM1.getCreatedAt());
+        }
+        int comp = lastM2.getCreatedAt().compareTo(lastM1.getCreatedAt());
+        return comp;
     }
 
     @Override
@@ -126,5 +130,10 @@ public abstract class BaseChat implements Comparable<BaseChat> {
             return nameIdentifier;
         else
             return name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

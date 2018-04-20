@@ -7,4 +7,10 @@
         android:singleLine="true"
         android:summary="Enter the phone number for the device running the SMSGateway (e.g. +4913212312312)"
         android:title="Phone number of your SMSGateway" />
+    <EditTextPreference
+        android:key="edit_text_preference_name_telegram"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:summary="Enter the name that is displayed in your account overview"
+        android:title="Name in Telegram" />
 </PreferenceScreen>

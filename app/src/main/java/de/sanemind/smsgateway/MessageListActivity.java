@@ -138,11 +138,14 @@ public class MessageListActivity extends AppCompatActivity {
                     mChatBox.setText("");
                     Toast.makeText(inst, "Message sent to gateway!", Toast.LENGTH_SHORT).show();
 
+                    String meUserName = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("edit_text_preference_name_telegram", null);
+                    UserChat meUser = ChatList.get_or_create_user(getApplicationContext(), meUserName);
+
                     BaseMessage chatMessage;
                     if (currentChat instanceof UserChat)
-                        chatMessage = new UserMessage(new Date(), text, serviceID, (UserChat)currentChat, true, false);
+                        chatMessage = new UserMessage(new Date(), text, serviceID, (UserChat)currentChat, true, BaseMessage.STATUS_SENT);
                     else if (currentChat instanceof GroupChat)
-                        chatMessage = new GroupMessage(new Date(), text, serviceID, (GroupChat)currentChat, "Me", true, false);
+                        chatMessage = new GroupMessage(new Date(), text, serviceID, (GroupChat)currentChat, meUser, true, BaseMessage.STATUS_SENT);
                     else
                         throw new IllegalArgumentException("Unknown chat type!");
                     MessageList.addSentMessage(getApplicationContext(), chatMessage);

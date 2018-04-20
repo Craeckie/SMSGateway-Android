@@ -27,10 +27,17 @@ public class SentMessageHolder extends ViewHolder {
 
         timeText.setText(Utils.formatRelativeTime(itemView.getContext(), time));
 
-        if (message.isReceived())
-            receivedImage.setImageResource(R.drawable.ic_check_black_24dp);
-        else
-            receivedImage.setImageResource(R.drawable.ic_access_time_black_24dp);
+        switch (message.getStatus()) {
+            case BaseMessage.STATUS_SENT:
+                receivedImage.setImageResource(R.drawable.ic_access_time_black_24dp);
+                break;
+            case BaseMessage.STATUS_RECEIVED:
+                receivedImage.setImageResource(R.drawable.ic_check_black_24dp);
+                break;
+            case BaseMessage.STATUS_FORWARDED:
+                receivedImage.setImageResource(R.drawable.ic_double_check_black_24dp);
+                break;
+        }
     }
 
 }

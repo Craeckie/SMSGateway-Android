@@ -6,19 +6,24 @@ import java.util.Date;
 
 public abstract class BaseMessage implements Comparable<BaseMessage> {
 
+    public static final int STATUS_SENT = 1;
+    public static final int STATUS_RECEIVED = 2;
+    public static final int STATUS_FORWARDED = 3;
+
     private Date createdAt;
     private String message;
     private String serviceID;
     private boolean isSent;
-    private boolean isReceived;
+    private int status;
+    private int index;
 
 
-    public BaseMessage(Date createdAt, String message, String serviceID, boolean isSent, boolean isReceived) {
+    public BaseMessage(Date createdAt, String message, String serviceID, boolean isSent, int status) {
         this.createdAt = createdAt;
         this.message = message;
         this.serviceID = serviceID;
         this.isSent = isSent;
-        this.isReceived = isReceived;
+        this.status = status;
     }
 
     public Date getCreatedAt() {
@@ -35,16 +40,23 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
         return isSent;
     }
 
-    public boolean isReceived() {
-        return isReceived;
+    public int getStatus() {
+        return status;
     }
 
-    public void setReceived(boolean received) {
-        isReceived = received;
-        createdAt = new Date();
+    public void setStatus(int status) {
+        this.status = status;
     }
 
     public abstract BaseChat getChat();
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
 
     @Override
     public int compareTo(@NonNull BaseMessage o) {

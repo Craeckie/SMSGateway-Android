@@ -75,11 +75,6 @@ public class UserChat extends BaseChat {
             return name;
     }
 
-    @Override
-    public String toString() {
-        return name;
-    }
-
     public class PhoneNumber implements Comparable<PhoneNumber> {
         private String number;
         private int priority;

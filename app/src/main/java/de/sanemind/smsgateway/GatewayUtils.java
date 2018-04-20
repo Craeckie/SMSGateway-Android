@@ -33,7 +33,8 @@ public class GatewayUtils {
                     }
                     String[] addressParts = address.split("@");
                     if (addressParts.length == 2) {
-                        String userName = addressParts[0];
+                        String userIdentifier = addressParts[0];
+                        String userName = userIdentifier.replace('_', ' ');
                         String groupIdentifier = addressParts[1];
                         String groupName = groupIdentifier.replace('_', ' ');
                         message = new GroupMessage(
@@ -41,7 +42,7 @@ public class GatewayUtils {
                                 messageBody,
                                 identifier,
                                 ChatList.get_or_create_group(context, groupName, groupIdentifier),
-                                userName,
+                                ChatList.get_or_create_user(context, userName, userIdentifier),
                                 isSent);
                     } else {
                         String name = address.replace('_', ' ');
@@ -52,7 +53,7 @@ public class GatewayUtils {
                                     messageBody,
                                     identifier,
                                     groupChat,
-                                    name,
+                                    ChatList.get_or_create_user(context, name, address),
                                     isSent);
                         } else {
                             message = new UserMessage(

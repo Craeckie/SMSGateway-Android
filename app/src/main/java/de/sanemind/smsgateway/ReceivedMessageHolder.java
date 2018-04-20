@@ -1,5 +1,6 @@
 package de.sanemind.smsgateway;
 
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
@@ -7,6 +8,7 @@ import android.widget.TextView;
 
 import de.sanemind.smsgateway.model.BaseMessage;
 import de.sanemind.smsgateway.model.GroupMessage;
+import de.sanemind.smsgateway.model.UserChat;
 
 class ReceivedMessageHolder extends RecyclerView.ViewHolder {
     TextView messageText, timeText, nameText;
@@ -18,17 +20,36 @@ class ReceivedMessageHolder extends RecyclerView.ViewHolder {
         timeText = (TextView) itemView.findViewById(R.id.text_message_time);
         nameText = (TextView) itemView.findViewById(R.id.text_message_name);
         profileImage = (ImageView) itemView.findViewById(R.id.image_message_profile);
+        if (profileImage != null)
+            profileImage.setImageURI(null);
     }
 
     void bind(BaseMessage message) {
         messageText.setText(message.getMessage());
 
+        if (profileImage != null) {
+
+            UserChat userChat = null;
+            if (message.getChat() instanceof UserChat) {
+                userChat = (UserChat) message.getChat();
+            } else if (message instanceof GroupMessage) {
+                userChat = ((GroupMessage)message).getUser();
+            }
+            if (userChat != null && userChat.getPictureUri() != null) {
+                Uri uri = userChat.getPictureUri();
+//                Log.v("SMSGateway", chat.getName() + ": " + uri.toString());
+                profileImage.setImageURI(uri);
+            } else {
+                profileImage.setImageURI(null);
+            }
+        }
+
         // Format the stored timestamp into a readable String using method.
         long time = message.getCreatedAt().getTime();
         timeText.setText(Utils.formatRelativeTime(itemView.getContext(), time));
 //        String name = message.getChat().getName();
-        if (message instanceof GroupMessage) {
-            String name = ((GroupMessage) message).getUsername();
+        if (nameText != null && message instanceof GroupMessage) {
+            String name = ((GroupMessage) message).getUser().getName();
             nameText.setText(name);
 
             // Insert the profile image from the URL into the ImageView.

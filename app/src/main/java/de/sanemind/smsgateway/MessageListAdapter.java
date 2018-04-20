@@ -10,11 +10,15 @@ import java.util.List;
 
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
+import de.sanemind.smsgateway.model.GroupChat;
+import de.sanemind.smsgateway.model.GroupMessage;
 import de.sanemind.smsgateway.model.UserChat;
 
 public class MessageListAdapter extends android.support.v7.widget.RecyclerView.Adapter {
     private static final int VIEW_TYPE_MESSAGE_SENT = 1;
-    private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
+    private static final int VIEW_TYPE_USER_MESSAGE_RECEIVED = 2;
+    private static final int VIEW_TYPE_GROUP_MESSAGE_RECEIVED = 3;
+    private static final int VIEW_TYPE_GROUP_MESSAGE_RECEIVED_SHORT = 4;
 
     private Context mContext;
     BaseChat chat;
@@ -41,12 +45,28 @@ public class MessageListAdapter extends android.support.v7.widget.RecyclerView.A
     public int getItemViewType(int position) {
         BaseMessage message = curMessages.get(position);
 
-        if (message.isSent()) {
-            // If the current user is the sender of the message
+        if (message.isSent()) { // If the current user is the sender of the message
+
             return VIEW_TYPE_MESSAGE_SENT;
-        } else {
-            // If some other user sent the message
-            return VIEW_TYPE_MESSAGE_RECEIVED;
+        } else { // If some other user sent the message
+            if (chat instanceof UserChat) {
+                return VIEW_TYPE_USER_MESSAGE_RECEIVED;
+            }
+            else if (chat instanceof GroupChat) {
+                UserChat currentMessageUser = ((GroupMessage)message).getUser();
+                List<BaseMessage> chatMessages = message.getChat().getMessages();
+                int index = message.getIndex();
+                if (index < chatMessages.size() - 1) {
+                    BaseMessage previousMessage = chatMessages.get(index + 1);
+                    if (previousMessage instanceof GroupMessage) {
+                        GroupMessage previousGroupMessage = (GroupMessage) previousMessage;
+                        if (previousGroupMessage.getUser().equals(currentMessageUser))
+                            return VIEW_TYPE_GROUP_MESSAGE_RECEIVED_SHORT;
+                    }
+                }
+                return VIEW_TYPE_GROUP_MESSAGE_RECEIVED;
+            }
+            return -1;
         }
     }
 
@@ -59,13 +79,17 @@ public class MessageListAdapter extends android.support.v7.widget.RecyclerView.A
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_message_sent, parent, false);
             return new SentMessageHolder(view);
-        } else if (viewType == VIEW_TYPE_MESSAGE_RECEIVED) {
-            if (chat instanceof UserChat)
+        } else if (viewType == VIEW_TYPE_USER_MESSAGE_RECEIVED) {
                 view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.item_user_message_received, parent, false);
-            else
-                view = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.item_group_message_received, parent, false);
+            return new ReceivedMessageHolder(view);
+        } else if (viewType == VIEW_TYPE_GROUP_MESSAGE_RECEIVED) {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_group_message_received, parent, false);
+            return new ReceivedMessageHolder(view);
+        } else if (viewType == VIEW_TYPE_GROUP_MESSAGE_RECEIVED_SHORT) {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_group_message_received_short, parent, false);
             return new ReceivedMessageHolder(view);
         }
 
@@ -81,7 +105,9 @@ public class MessageListAdapter extends android.support.v7.widget.RecyclerView.A
             case VIEW_TYPE_MESSAGE_SENT:
                 ((SentMessageHolder) holder).bind(message);
                 break;
-            case VIEW_TYPE_MESSAGE_RECEIVED:
+            case VIEW_TYPE_USER_MESSAGE_RECEIVED:
+            case VIEW_TYPE_GROUP_MESSAGE_RECEIVED:
+            case VIEW_TYPE_GROUP_MESSAGE_RECEIVED_SHORT:
                 ((ReceivedMessageHolder) holder).bind(message);
         }
     }

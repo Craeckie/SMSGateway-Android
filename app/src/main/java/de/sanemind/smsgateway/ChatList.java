@@ -13,6 +13,9 @@ import de.sanemind.smsgateway.model.UserChat;
 public class ChatList {
     protected static final List<BaseChat> ChatList = new ArrayList<>();
 
+
+    public static final UserChat GatewayUser = new UserChat("Gateway", "Gateway");
+
     public static Boolean isEmpty() {
         return ChatList.isEmpty();
     }
@@ -20,10 +23,9 @@ public class ChatList {
     private static void fillIfEmpty(Context context) {
         if (ChatList.isEmpty()) {
             //ChatList.add(currentUser);
-            UserChat user = new UserChat("Gateway", "Gateway");
             String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_phone_gateway", null);
-            user.addPhoneNumber(gatewayNumber, 1);
-            ChatList.add(user);
+            GatewayUser.addPhoneNumber(gatewayNumber, 1);
+            ChatList.add(GatewayUser);
         }
     }
 
