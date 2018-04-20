@@ -45,7 +45,7 @@ public class MessageList {
         }
         if (msg != null) {
             List<BaseMessage> chatMessages = msg.getChat().getMessages();
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 3 && i < chatMessages.size(); i++) {
                 BaseMessage currentMessage = chatMessages.get(i);
                 if (currentMessage.equals(msg)) {
                     switch (currentMessage.getStatus()) {
