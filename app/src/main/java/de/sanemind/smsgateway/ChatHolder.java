@@ -42,7 +42,7 @@ public class ChatHolder extends ViewHolder {
             }
         }
 
-        usernameText.setText(chat.getName());
+        usernameText.setText(chat.getDisplayName());
 //        String[] lines = lastMessage.message.split("\n");
 //        String message = "";
 //        if (lines.length > 0) {

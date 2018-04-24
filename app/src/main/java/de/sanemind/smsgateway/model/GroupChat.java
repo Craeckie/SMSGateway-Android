@@ -6,6 +6,15 @@ public class GroupChat extends BaseChat {
     }
 
     @Override
+    public String getDisplayName() {
+        if (name != null)
+            return name;
+        if (nameIdentifier != null)
+            return nameIdentifier;
+        return null;
+    }
+
+    @Override
     public String getIdentifier() {
         return nameIdentifier;
     }

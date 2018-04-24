@@ -1,5 +1,7 @@
 package de.sanemind.smsgateway;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -84,7 +86,10 @@ public class ChatListFragment extends Fragment {
         chatListUpdateTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                getActivity().runOnUiThread(chatListUpdateRunnable);
+                Activity activity = getActivity();
+                if (activity != null)
+                    return;
+                activity.runOnUiThread(chatListUpdateRunnable);
             }
         }, 1000, 5000);
 
@@ -98,8 +103,8 @@ public class ChatListFragment extends Fragment {
 //        intent.putExtra(EXTRA_MESSAGE, message);
 //    startActivity(intent);
 
-    public Intent getOpenChatIntent(BaseChat chat) {
-        Intent intent = new Intent(this.getContext(), MessageListActivity.class);
+    public Intent getOpenChatIntent(Context context, BaseChat chat) {
+        Intent intent = new Intent(context, MessageListActivity.class);
         String identifier = chat.getNameIdentifier();
         if (identifier == null)
             identifier = chat.getName();
@@ -116,7 +121,7 @@ public class ChatListFragment extends Fragment {
     }
 
     public void openChat(BaseChat chat) {
-        startActivity(getOpenChatIntent(chat));
+        startActivity(getOpenChatIntent(getContext(), chat));
     }
 
     public static ChatListFragment getInstance() {

@@ -19,6 +19,17 @@ public class UserChat extends BaseChat {
         this.nameIdentifier = nameIdentifier;
     }
 
+    @Override
+    public String getDisplayName() {
+        if (name != null)
+            return name;
+        if (nameIdentifier != null)
+            return nameIdentifier;
+        if (mostImportantPhoneNumber != null)
+            return mostImportantPhoneNumber.getNumber();
+        return null;
+    }
+
     private Set<PhoneNumber> phoneNumbers;
 
     private PhoneNumber mostImportantPhoneNumber;

@@ -42,10 +42,14 @@ public class Main extends AppCompatActivity {
      */
     private ViewPager mViewPager;
 
+    private static Main instance;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        instance = this;
 
         String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("edit_text_preference_phone_gateway", null);
         if (gatewayNumber == null) {
@@ -53,7 +57,7 @@ public class Main extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Need to set phone number of SMSGateway first!", Toast.LENGTH_LONG).show();
         }
 
-        if (gatewayNumber != null && ChatList.isEmpty() && getPermission(Manifest.permission.READ_SMS, getString(R.string.request_read_sms_permission), READ_SMS_PERMISSIONS_REQUEST)
+        if (gatewayNumber != null && !MessageList.isIsRefreshedFromSMSInbox() && getPermission(Manifest.permission.READ_SMS, getString(R.string.request_read_sms_permission), READ_SMS_PERMISSIONS_REQUEST)
                 && getPermission(Manifest.permission.READ_CONTACTS, getString(R.string.request_read_contact_permission),  READ_CONTACTS_PERMISSIONS_REQUEST)) {
             MessageList.refreshFromSMSInbox(getApplicationContext());
         }
@@ -78,7 +82,12 @@ public class Main extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                        .setAction("Show notification", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                new SmsBroadcastReceiver().openMessageNotification(getApplicationContext(), ChatList.GatewayUser.getLastMessage(), ChatListFragment.getInstance());
+                            }
+                        }).show();
             }
         });
     }
@@ -167,6 +176,10 @@ public class Main extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public static Main getInstance() {
+        return instance;
     }
 
     /**

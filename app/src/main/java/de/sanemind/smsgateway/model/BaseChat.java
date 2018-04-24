@@ -32,6 +32,8 @@ public abstract class BaseChat implements Comparable<BaseChat> {
         this.name = name;
     }
 
+    public abstract String getDisplayName();
+
     public abstract String getIdentifier();
 
     public boolean isUpdatedFromContacts() {

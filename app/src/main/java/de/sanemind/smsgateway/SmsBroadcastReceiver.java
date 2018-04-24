@@ -17,13 +17,14 @@ import java.util.Calendar;
 import de.sanemind.smsgateway.model.BaseMessage;
 
 public class SmsBroadcastReceiver extends BroadcastReceiver {
+    @SuppressWarnings("SpellCheckingInspection")
     protected static final String SMS_BUNDLE = "pdus";
     private static final String SMS_RECEIVED = "android.provider.Telephony.SMS_RECEIVED";
 
     private static final int NOTIFICATION_ID = 42;
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
         Bundle intentExtras = intent.getExtras();
 
         if (intentExtras != null && intent.getAction().equals(SMS_RECEIVED)) {
@@ -44,39 +45,48 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
             }
             String address = messages[0].getOriginatingAddress();
             cal.setTimeInMillis(messages[0].getTimestampMillis());
-            BaseMessage receivedMessage = MessageList.addMessage(context, cal.getTime(), sb.toString(), address, false);
+            final BaseMessage receivedMessage = MessageList.addMessage(context, cal.getTime(), sb.toString(), address, false);
             MessageListActivity messageList = MessageListActivity.instance();
             if (messageList != null && receivedMessage != null) {
                 messageList.messageReceived(receivedMessage);
             }
-            ChatListFragment chatListFragment = ChatListFragment.getInstance();
+            final ChatListFragment chatListFragment = ChatListFragment.getInstance();
             if (chatListFragment != null) {
                 chatListFragment.getChatListRecycler().updateAdapter();
                 if (receivedMessage != null && !receivedMessage.isSent()) {
-                    Intent notificationIntent = chatListFragment.getOpenChatIntent(receivedMessage.getChat());
-                    //notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    PendingIntent pendingIntent;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-                        stackBuilder.addNextIntentWithParentStack(notificationIntent);
-                        pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
-                    } else {
-                        pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    }
-
-
-                    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, NotificationChannel.DEFAULT_CHANNEL_ID)
-                            .setSmallIcon(R.drawable.ic_launcher_foreground)
-                            .setContentTitle(receivedMessage.getChat().getName())
-                            .setContentText(receivedMessage.getMessage())
-                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                            .setStyle(new NotificationCompat.BigTextStyle().bigText(receivedMessage.getMessage()))
-                            .setAutoCancel(true)
-                            .setContentIntent(pendingIntent);
-                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-                    notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            openMessageNotification(context, receivedMessage, chatListFragment);
+                        }
+                    }).start();
                 }
             }
         }
+    }
+
+    public void openMessageNotification(Context context, BaseMessage receivedMessage, ChatListFragment chatListFragment) {
+        Intent notificationIntent = chatListFragment.getOpenChatIntent(context, receivedMessage.getChat());
+//                    notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+            stackBuilder.addNextIntentWithParentStack(notificationIntent);
+            pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        } else {
+            pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+        }
+
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, NotificationChannel.DEFAULT_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle(receivedMessage.getChat().getName())
+                .setContentText(receivedMessage.getMessage())
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(receivedMessage.getMessage()))
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
     }
 }

@@ -20,6 +20,8 @@ import de.sanemind.smsgateway.model.UserChat;
 import de.sanemind.smsgateway.model.UserMessage;
 
 public class MessageList {
+
+    private static boolean isRefreshedFromSMSInbox = false;
     //private static final Map<BaseChat, ArrayList<BaseMessage>> messageList = new java.util.HashMap<>();
 
     public static void addMessage(BaseMessage message) {
@@ -123,6 +125,7 @@ public class MessageList {
     }
 
     public static void refreshFromSMSInbox(Context context) {
+        setRefreshedFromSMSInbox();
 //        messageList.clear();
 //        List<BaseMessage> receivedMessages = getMessages(contentResolver, "content://sms/inbox", false, 50);
 //        List<BaseMessage> sentMessages = getMessages(contentResolver, "content://sms/sent", true, -1);
@@ -175,5 +178,13 @@ public class MessageList {
         } while (smsInboxCursor.moveToNext());
         smsInboxCursor.close();
         return;
+    }
+
+    public static boolean isIsRefreshedFromSMSInbox() {
+        return isRefreshedFromSMSInbox;
+    }
+
+    public static void setRefreshedFromSMSInbox() {
+        MessageList.isRefreshedFromSMSInbox = true;
     }
 }
