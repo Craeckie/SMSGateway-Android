@@ -6,7 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.telephony.SmsManager;
 import android.view.MenuItem;
@@ -15,9 +15,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
 
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
@@ -26,7 +31,7 @@ import de.sanemind.smsgateway.model.GroupMessage;
 import de.sanemind.smsgateway.model.UserChat;
 import de.sanemind.smsgateway.model.UserMessage;
 
-public class MessageListActivity extends AppCompatActivity {
+public class MessageListActivity extends PermissionRequestActivity {
 
     private TextView mTextMessage;
     private MessageListRecyclerView messageRecycler;
@@ -94,6 +99,10 @@ public class MessageListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message_list);
 
+        if (!MessageList.isRefreshedFromSMSInbox()) {
+            requestPermissions();
+        }
+
         Intent intent = getIntent();
         String chatName = intent.getStringExtra(ChatListFragment.EXTRA_CHAT);
         String chatType = intent.getStringExtra(ChatListFragment.EXTRA_CHAT_TYPE);
@@ -107,6 +116,13 @@ public class MessageListActivity extends AppCompatActivity {
         }
         else
             throw new IllegalArgumentException("Unknown chat type!");
+
+        BaseChat notificationChat = SmsBroadcastReceiver.NOTIFICATION_CHAT;
+        if (notificationChat != null && SmsBroadcastReceiver.NOTIFICATION_CHAT.equals(currentChat)) {
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+            notificationManager.cancel(SmsBroadcastReceiver.NOTIFICATION_ID);
+        }
+
 
         setTitle(currentChat.getName() + "(" + currentChat.getIdentifier() + ")");
 
@@ -142,6 +158,15 @@ public class MessageListActivity extends AppCompatActivity {
                         message = text;
                         UserChat userchat = (UserChat) currentChat;
                         gatewayNumber = userchat.getMostImportantPhoneNumber().getNumber();
+                    } else {
+                        try {
+                            KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA512");
+
+                            Cipher cipher = Cipher.getInstance("AES_256/CBC/PKCS5Padding");
+//                            cipher.
+                        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+                            Toast.makeText(inst,"Couldn't encrypt!\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
                     }
 
                     smsManager.sendTextMessage(gatewayNumber, null, message, null, null);

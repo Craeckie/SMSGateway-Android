@@ -14,6 +14,7 @@ import android.telephony.SmsMessage;
 
 import java.util.Calendar;
 
+import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
 
 public class SmsBroadcastReceiver extends BroadcastReceiver {
@@ -21,7 +22,8 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
     protected static final String SMS_BUNDLE = "pdus";
     private static final String SMS_RECEIVED = "android.provider.Telephony.SMS_RECEIVED";
 
-    private static final int NOTIFICATION_ID = 42;
+    public static final int NOTIFICATION_ID = 42;
+    public static BaseChat NOTIFICATION_CHAT;
 
     @Override
     public void onReceive(final Context context, Intent intent) {
@@ -46,6 +48,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
             String address = messages[0].getOriginatingAddress();
             cal.setTimeInMillis(messages[0].getTimestampMillis());
             final BaseMessage receivedMessage = MessageList.addMessage(context, cal.getTime(), sb.toString(), address, false);
+            NOTIFICATION_CHAT = receivedMessage.getChat();
             MessageListActivity messageList = MessageListActivity.instance();
             if (messageList != null && receivedMessage != null) {
                 messageList.messageReceived(receivedMessage);
@@ -54,6 +57,9 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
             if (chatListFragment != null) {
                 chatListFragment.getChatListRecycler().updateAdapter();
                 if (receivedMessage != null && !receivedMessage.isSent()) {
+                    if (messageList != null && messageList.currentChat.equals(receivedMessage.getChat())
+                            && messageList.getWindow().isActive())
+                        return;
                     new Thread(new Runnable() {
                         @Override
                         public void run() {

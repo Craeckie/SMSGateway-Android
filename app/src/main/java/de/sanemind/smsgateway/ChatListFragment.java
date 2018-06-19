@@ -67,7 +67,6 @@ public class ChatListFragment extends Fragment {
         chatListRecycler.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
         chatListRecycler.setAdapter(chatListAdapter);
 
-
 //        UserChat chat = new UserChat("John", "+49123123123");
 //        chat.getMessages().add(new UserMessage(new Date(), "Hey, whatsuppp?", "TG", chat, false));
 //        ChatList.ChatList.add(chat);

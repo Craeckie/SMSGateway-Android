@@ -13,4 +13,11 @@
         android:singleLine="true"
         android:summary="Enter the name that is displayed in your account overview"
         android:title="Name in Telegram" />
+    <EditTextPreference
+        android:key="edit_text_preference_sms_key"
+        android:singleLine="true"
+        android:password="true"
+        android:summary="Enter the key used to encrypt/decrypt SMS from/to your SMSGateway"
+        android:title="Key for SMS" />
+
 </PreferenceScreen>

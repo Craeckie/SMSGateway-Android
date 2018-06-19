@@ -21,7 +21,7 @@ import de.sanemind.smsgateway.model.UserMessage;
 
 public class MessageList {
 
-    private static boolean isRefreshedFromSMSInbox = false;
+    private static boolean refreshedFromSMSInbox = false;
     //private static final Map<BaseChat, ArrayList<BaseMessage>> messageList = new java.util.HashMap<>();
 
     public static void addMessage(BaseMessage message) {
@@ -180,11 +180,12 @@ public class MessageList {
         return;
     }
 
-    public static boolean isIsRefreshedFromSMSInbox() {
-        return isRefreshedFromSMSInbox;
+    public static boolean isRefreshedFromSMSInbox() {
+        return refreshedFromSMSInbox;
     }
 
     public static void setRefreshedFromSMSInbox() {
-        MessageList.isRefreshedFromSMSInbox = true;
+        MessageList.refreshedFromSMSInbox = true;
     }
+
 }
