@@ -29,8 +29,13 @@ public class ContactsLoader {
         long ID = 0;
         boolean foundContact = false;
         // Try to find name, if only number available
-        if (PhoneNumberUtils.isGlobalPhoneNumber(chat.getName())) {
-            Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(chat.getName()));
+        if (PhoneNumberUtils.isGlobalPhoneNumber(chat.getName()) || chat.getPhoneNumbers().size() > 0) {
+            UserChat.PhoneNumber phoneNumber = null;
+            if (chat.getPhoneNumbers().size() > 0)
+                phoneNumber = chat.getMostImportantPhoneNumber();
+            else
+                phoneNumber = chat.addPhoneNumber(context, chat.getName(), 2);
+            Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber.getNumber()));
             Cursor cursor = context.getContentResolver().query(uri, new String[] {BaseColumns._ID,
                     name_column}, null, null, null);
             try {
@@ -44,6 +49,7 @@ public class ContactsLoader {
                     String number = chat.getName();
 
                     chat.setName(name);
+//                    chat.setIdentifier(name);
                     chat.addPhoneNumber(context, number, 2);
                     foundContact = true;
                 }

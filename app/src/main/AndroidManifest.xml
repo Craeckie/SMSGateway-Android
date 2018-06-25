@@ -27,6 +27,7 @@
         <activity
             android:name=".MessageListActivity"
             android:parentActivityName=".Main"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:label="@string/app_name">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

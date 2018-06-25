@@ -5,9 +5,9 @@ android {
     defaultConfig {
         applicationId "de.sanemind.smsgateway"
         minSdkVersion 15
-        targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
+        targetSdkVersion 28
+        versionCode 21
+        versionName "1.0.3"
         testInstrumentationRunner "android.support.Main.runner.AndroidJUnitRunner"
     }
     buildTypes {

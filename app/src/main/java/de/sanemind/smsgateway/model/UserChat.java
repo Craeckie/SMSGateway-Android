@@ -40,7 +40,7 @@ public class UserChat extends BaseChat {
         return phoneNumbers;
     }
 
-    public void addPhoneNumber(Context context, String phoneNumber, int priority) {
+    public PhoneNumber addPhoneNumber(Context context, String phoneNumber, int priority) {
         PhoneNumber curNum = null;
         for (PhoneNumber num : phoneNumbers) {
             if (num.equals(phoneNumber)) {
@@ -56,6 +56,7 @@ public class UserChat extends BaseChat {
             mostImportantPriority = priority;
             mostImportantPhoneNumber = curNum;
         }
+        return curNum;
     }
 
     public boolean hasPhoneNumber(Context context, String phoneNumber) {
@@ -95,20 +96,22 @@ public class UserChat extends BaseChat {
         private int priority;
 
         public PhoneNumber(Context context, String number, int priority) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                number = PhoneNumberUtils.normalizeNumber(number);
-            }
-            if (number.startsWith("0"))
-                number = "+" + Utils.getCountryCode(context) + number.substring(1);
-            this.number = number;
+            setNumber(context, number);
             this.priority = priority;
         }
 
         public String getNumber() {
-            return number;
+            return "+" + number;
         }
 
-        public void setNumber(String number) {
+        public void setNumber(Context context, String number) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                number = PhoneNumberUtils.normalizeNumber(number);
+            }
+            if (number.startsWith("0"))
+                number = Utils.getCountryCode(context) + number.substring(1);
+            else if (number.startsWith("+"))
+                number = number.substring(1);
             this.number = number;
         }
 

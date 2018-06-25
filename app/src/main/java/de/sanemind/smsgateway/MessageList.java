@@ -166,7 +166,7 @@ public class MessageList {
                 msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent);
             }
             if (msg == null) {
-                msg = new UserMessage(date, body, "SMS", ChatList.get_or_create_user(context, null, null, address), isSent);
+                msg = new UserMessage(date, body, "SMS", ChatList.get_or_create_user(context, address, address, address), isSent);
             }
             msg.getChat().addMessage(msg, 0);
 //            messages.add(msg);

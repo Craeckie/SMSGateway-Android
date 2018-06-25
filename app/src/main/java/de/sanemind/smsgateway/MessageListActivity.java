@@ -2,21 +2,25 @@ package de.sanemind.smsgateway;
 
 import android.app.TaskStackBuilder;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.StringJoiner;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -98,6 +102,11 @@ public class MessageListActivity extends PermissionRequestActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message_list);
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        TextView titleText = (TextView) findViewById(R.id.toolbar_title);
+
 
         if (!MessageList.isRefreshedFromSMSInbox()) {
             requestPermissions();
@@ -108,11 +117,19 @@ public class MessageListActivity extends PermissionRequestActivity {
         String chatType = intent.getStringExtra(ChatListFragment.EXTRA_CHAT_TYPE);
         if (chatType.equals("USER")) {
             currentChat = ChatList.get_or_create_user(getApplicationContext(), chatName, chatName, chatName);
-            setTitle(currentChat.getName() + "(" + currentChat.getIdentifier() + ")");
+            titleText.setText(currentChat.getName() + "\n" + currentChat.getIdentifier());
+            ImageView profileImage = (ImageView) findViewById(R.id.image_message_profile);
+            UserChat userChat = (UserChat) currentChat;
+            if (userChat.getPictureUri() != null) {
+                Uri uri = userChat.getPictureUri();
+                profileImage.setImageURI(uri);
+            } else {
+                profileImage.setImageURI(null);
+            }
         }
         else if (chatType.equals("GROUP")) {
             currentChat = ChatList.get_or_create_group(getApplicationContext(), chatName, chatName);
-            setTitle(currentChat.getName());
+            titleText.setText(currentChat.getName());
         }
         else
             throw new IllegalArgumentException("Unknown chat type!");
@@ -122,9 +139,6 @@ public class MessageListActivity extends PermissionRequestActivity {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
             notificationManager.cancel(SmsBroadcastReceiver.NOTIFICATION_ID);
         }
-
-
-        setTitle(currentChat.getName() + "(" + currentChat.getIdentifier() + ")");
 
 
 
@@ -151,7 +165,27 @@ public class MessageListActivity extends PermissionRequestActivity {
                     String serviceID = "TG";
                     if (standardService != null)
                         serviceID = standardService;
-                    String message = serviceID + "\nTo: " + currentChat.getNameIdentifier() + "\n" + text;
+                    String[] lines = new String[] {serviceID,
+                            "To: " + currentChat.getNameIdentifier(),
+                            "",
+                            text};
+                    String message = "";
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        message = String.join("\n", lines);
+                    } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                        StringJoiner joiner = new StringJoiner("\n");
+                        for (String line : lines) {
+                            joiner.add(line);
+                        }
+                        message = joiner.toString();
+                    } else {
+                        StringBuilder builder = new StringBuilder();
+                        for (String line : lines) {
+                            builder.append(line + "\n");
+                        }
+                        builder.deleteCharAt(builder.length() - 1); //Remove last newline
+                        message = builder.toString();
+                    }
                     String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("edit_text_preference_phone_gateway", null);
 //                    String phoneNumber = ChatList.GatewayNumber;
                     if (serviceID.equals("SMS") && currentChat instanceof UserChat) {

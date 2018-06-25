@@ -76,6 +76,7 @@ public class ChatList {
         if (phoneNumber != null)
             user.addPhoneNumber(context, phoneNumber, 1);
         ContactsLoader.updateUserChat(context, user);
+
         ChatList.add(user);
         return user;
     }

@@ -36,6 +36,10 @@ public abstract class BaseChat implements Comparable<BaseChat> {
 
     public abstract String getIdentifier();
 
+    public void setIdentifier(String nameIdentifier) {
+        this.nameIdentifier = nameIdentifier;
+    }
+
     public boolean isUpdatedFromContacts() {
         return updatedFromContacts;
     }
