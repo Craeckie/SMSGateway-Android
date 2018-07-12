@@ -29,22 +29,22 @@ public class ChatList {
         }
     }
 
-    public static GroupChat get_or_create_group(Context context, String groupName, String groupIdentifier) {
-        GroupChat g = find_group(context, groupIdentifier);
+    public static GroupChat get_or_create_group(Context context, String groupName, String groupIdentifier, boolean isChannel) {
+        GroupChat g = find_group(context, groupIdentifier, isChannel);
         if (g != null)
             return g;
         else {
-            g = new GroupChat(groupName, groupIdentifier);
+            g = new GroupChat(groupName, groupIdentifier, isChannel);
             ChatList.add(g);
             return g;
         }
     }
-    public static GroupChat find_group(Context context, String groupIdentifier) {
+    public static GroupChat find_group(Context context, String groupIdentifier, boolean isChannel) {
         fillIfEmpty(context);
         for (BaseChat chat:ChatList) {
             if (chat instanceof GroupChat) {
                 GroupChat group = (GroupChat) chat;
-                if (group.getIdentifier().equals(groupIdentifier)) {
+                if (group.getIdentifier().equals(groupIdentifier) && group.isChannel() == isChannel) {
                     return group;
                 }
             }

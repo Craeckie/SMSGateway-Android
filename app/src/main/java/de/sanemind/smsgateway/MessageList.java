@@ -75,13 +75,13 @@ public class MessageList {
             }
         }
         else if (msg == null) {
-            msg = new UserMessage(date, body, "SMS", ChatList.get_or_create_user(context, null, null, phoneNumber), isSent);
+            msg = new UserMessage(-1, date, body, "SMS", ChatList.get_or_create_user(context, null, null, phoneNumber), isSent, false);
         }
         MessageList.addMessage(msg);
         if (msg instanceof GroupMessage) {
             GroupMessage groupMsg = (GroupMessage)msg;
             UserChat user = groupMsg.getUser();
-            if (user.getMessages().size() == 0)
+            if (user != null && user.getMessages().size() == 0)
                 ChatList.ChatList.remove(user);
         }
         Collections.sort(ChatList.ChatList);
@@ -162,13 +162,23 @@ public class MessageList {
             cal.setTimeInMillis(dateTimestamp);
             Date date = cal.getTime();
             BaseMessage msg = null;
+            boolean foundEditedMessage = false;
             if (PhoneNumberUtils.compare(address, gatewayNumber)) {
                 msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent);
             }
             if (msg == null) {
-                msg = new UserMessage(date, body, "SMS", ChatList.get_or_create_user(context, address, address, address), isSent);
+                msg = new UserMessage(-1, date, body, "SMS", ChatList.get_or_create_user(context, address, address, address), isSent, false);
+            } else if (msg.isEdit()) {
+                for (BaseMessage cur_msg : msg.getChat().getMessages()) {
+                    if (cur_msg.getID() == msg.getID()) {
+                        cur_msg.setMessage(msg.getMessage());
+                        foundEditedMessage = true;
+                        break;
+                    }
+                }
             }
-            msg.getChat().addMessage(msg, 0);
+            if (!foundEditedMessage)
+                msg.getChat().addMessage(msg, 0);
 //            messages.add(msg);
 //            if (PhoneNumberUtils.compare(from, GatewayNumber)) {
 //                mMessageAdapter.getmMessageList().add(new UserMessage(body, GatewayUser, new Date()));

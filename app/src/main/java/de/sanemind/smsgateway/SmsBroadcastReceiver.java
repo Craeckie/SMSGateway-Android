@@ -1,5 +1,6 @@
 package de.sanemind.smsgateway;
 
+import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
@@ -10,7 +11,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
+import android.widget.Toast;
 
 import java.util.Calendar;
 
@@ -21,6 +24,8 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
     @SuppressWarnings("SpellCheckingInspection")
     protected static final String SMS_BUNDLE = "pdus";
     private static final String SMS_RECEIVED = "android.provider.Telephony.SMS_RECEIVED";
+    protected static final int SMS_SENT = 42;
+    protected static final int SMS_DELIVERED = 43;
 
     public static final int NOTIFICATION_ID = 42;
     public static BaseChat NOTIFICATION_CHAT;
@@ -29,7 +34,54 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(final Context context, Intent intent) {
         Bundle intentExtras = intent.getExtras();
 
-        if (intentExtras != null && intent.getAction().equals(SMS_RECEIVED)) {
+        if (intentExtras == null)
+            return;
+        int id = intentExtras.getInt("id", -1);
+        if (id == SMS_SENT) {
+            int num = intent.getIntExtra("object", -1);
+            switch (getResultCode()) {
+                case Activity.RESULT_OK:
+                    String msg = "SMS Sent";
+                    if (num != -1)
+                        msg += ": " + num;
+                    Toast.makeText(context,
+                            msg,
+                            Toast.LENGTH_SHORT).show();
+
+                    break;
+                case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+                    Toast.makeText(context, "SMS generic failure", Toast.LENGTH_SHORT)
+                            .show();
+
+                    break;
+                case SmsManager.RESULT_ERROR_NO_SERVICE:
+                    Toast.makeText(context, "SMS no service", Toast.LENGTH_SHORT)
+                            .show();
+
+                    break;
+                case SmsManager.RESULT_ERROR_NULL_PDU:
+                    Toast.makeText(context, "SMS null PDU", Toast.LENGTH_SHORT).show();
+                    break;
+                case SmsManager.RESULT_ERROR_RADIO_OFF:
+                    Toast.makeText(context, "SMS radio off", Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    Toast.makeText(context, "SMS unknown error :(", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+        else if (id == SMS_DELIVERED) {
+            if (getResultCode() == Activity.RESULT_OK) {
+                Toast.makeText(context,
+                        "SMS Delivered: " + intent.getIntExtra("object", 0),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(context,
+                        "SMS couldn't be delivered! " + intent.getIntExtra("object", 0),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+        else if (intent.getAction().equals(SMS_RECEIVED)) {
             Object[] sms = (Object[]) intentExtras.get(SMS_BUNDLE);
             if (sms.length == 0) {
                 return;

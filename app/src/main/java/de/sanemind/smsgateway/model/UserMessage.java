@@ -3,12 +3,12 @@ package de.sanemind.smsgateway.model;
 import java.util.Date;
 
 public class UserMessage extends BaseMessage {
-    public UserMessage(Date createdAt, String message, String serviceID, UserChat user, boolean isSent) {
-        super(createdAt, message, serviceID, isSent, STATUS_FORWARDED);
+    public UserMessage(long ID, Date createdAt, String message, String serviceID, UserChat user, boolean isSent, boolean isEdit) {
+        super(ID, createdAt, message, serviceID, isSent, STATUS_FORWARDED, isEdit);
         this.user = user;
     }
-    public UserMessage(Date createdAt, String message, String serviceID, UserChat user, boolean isSent, int status) {
-        super(createdAt, message, serviceID, isSent, status);
+    public UserMessage(long ID, Date createdAt, String message, String serviceID, UserChat user, boolean isSent, int status, boolean isEdit) {
+        super(ID, createdAt, message, serviceID, isSent, status, isEdit);
         this.user = user;
     }
 

@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import de.sanemind.smsgateway.model.BaseMessage;
+import de.sanemind.smsgateway.model.GroupChat;
 import de.sanemind.smsgateway.model.GroupMessage;
 import de.sanemind.smsgateway.model.UserChat;
 
@@ -49,11 +50,14 @@ class ReceivedMessageHolder extends RecyclerView.ViewHolder {
         timeText.setText(Utils.formatRelativeTime(itemView.getContext(), time));
 //        String name = message.getChat().getName();
         if (nameText != null && message instanceof GroupMessage) {
-            String name = ((GroupMessage) message).getUser().getName();
-            nameText.setText(name);
+            GroupMessage groupMessage = (GroupMessage) message;
+            if (!((GroupChat)message.getChat()).isChannel()) {
+                String name = groupMessage.getUser().getName();
+                nameText.setText(name);
 
-            // Insert the profile image from the URL into the ImageView.
-            //Utils.displayRoundImageFromUrl(mContext, message.getSender().getProfileUrl(), profileImage);
+                // Insert the profile image from the URL into the ImageView.
+                //Utils.displayRoundImageFromUrl(mContext, message.getSender().getProfileUrl(), profileImage);
+            }
         }
 
     }

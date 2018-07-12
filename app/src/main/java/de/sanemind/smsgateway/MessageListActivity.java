@@ -1,6 +1,8 @@
 package de.sanemind.smsgateway;
 
+import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -19,6 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.StringJoiner;
 import java.util.Timer;
@@ -128,10 +132,13 @@ public class MessageListActivity extends PermissionRequestActivity {
             }
         }
         else if (chatType.equals("GROUP")) {
-            currentChat = ChatList.get_or_create_group(getApplicationContext(), chatName, chatName);
-            titleText.setText(currentChat.getName());
+            currentChat = ChatList.get_or_create_group(getApplicationContext(), chatName, chatName, false);
+            titleText.setText( currentChat.getDisplayName());
         }
-        else
+        else if (chatType.equals("CHANNEL")) {
+            currentChat = ChatList.get_or_create_group(getApplicationContext(), chatName, chatName, true);
+            titleText.setText(currentChat.getDisplayName());
+        } else
             throw new IllegalArgumentException("Unknown chat type!");
 
         BaseChat notificationChat = SmsBroadcastReceiver.NOTIFICATION_CHAT;
@@ -156,19 +163,29 @@ public class MessageListActivity extends PermissionRequestActivity {
         mSendButton.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Context context = getApplicationContext();
                 String text = mChatBox.getText().toString();
                 if (text.isEmpty()) {
-                    Toast.makeText(getApplicationContext(), "Please enter a message", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Please enter a message", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if (currentChat != null) {
                     String serviceID = "TG";
                     if (standardService != null)
                         serviceID = standardService;
-                    String[] lines = new String[] {serviceID,
-                            "To: " + currentChat.getNameIdentifier(),
-                            "",
-                            text};
+                    ArrayList<String> lines = new ArrayList<String>();
+                    lines.add(serviceID);
+                    lines.add("To: " + currentChat.getNameIdentifier());
+                    if (currentChat instanceof UserChat)
+                        lines.add("Type: User");
+                    else if (currentChat instanceof GroupChat) {
+                        if (((GroupChat)currentChat).isChannel())
+                            lines.add("Type: Channel");
+                        else
+                            lines.add("Type: Group");
+                    }
+                    lines.add("");
+                    lines.add(text);
                     String message = "";
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                         message = String.join("\n", lines);
@@ -186,7 +203,7 @@ public class MessageListActivity extends PermissionRequestActivity {
                         builder.deleteCharAt(builder.length() - 1); //Remove last newline
                         message = builder.toString();
                     }
-                    String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("edit_text_preference_phone_gateway", null);
+                    String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_phone_gateway", null);
 //                    String phoneNumber = ChatList.GatewayNumber;
                     if (serviceID.equals("SMS") && currentChat instanceof UserChat) {
                         message = text;
@@ -203,21 +220,37 @@ public class MessageListActivity extends PermissionRequestActivity {
                         }
                     }
 
-                    smsManager.sendTextMessage(gatewayNumber, null, message, null, null);
-                    mChatBox.setText("");
-                    Toast.makeText(inst, "Message sent to gateway!", Toast.LENGTH_SHORT).show();
+                    Intent broadcastReceiverSentIntent = new Intent(context, SmsBroadcastReceiver.class);
+                    broadcastReceiverSentIntent.putExtra("id", SmsBroadcastReceiver.SMS_SENT);
+                    PendingIntent messageSent = PendingIntent.getBroadcast(context, SmsBroadcastReceiver.SMS_SENT, broadcastReceiverSentIntent, 0);
+                    Intent broadcastReceiverDeliveredIntent = new Intent(context, SmsBroadcastReceiver.class);
+                    broadcastReceiverDeliveredIntent.putExtra("id", SmsBroadcastReceiver.SMS_DELIVERED);
+                    PendingIntent messageDelivered = PendingIntent.getBroadcast(context, SmsBroadcastReceiver.SMS_SENT, broadcastReceiverSentIntent, 0);
 
-                    String meUserName = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("edit_text_preference_name_telegram", null);
-                    UserChat meUser = ChatList.get_or_create_user(getApplicationContext(), meUserName, meUserName, null);
+                    ArrayList<String> messageParts = smsManager.divideMessage(message);
+                    ArrayList<PendingIntent> sentPendingIntents = new ArrayList<>(Collections.nCopies(messageParts.size(), messageSent));
+                    ArrayList<PendingIntent> deliveredPendingIntents = new ArrayList<>(Collections.nCopies(messageParts.size(), messageDelivered));
+
+//                    for (int i = 0; i < ; i++) {
+//                        sentPendingIntents.add(messageSent);
+//                    }
+//                    smsManager.sendTextMessage(gatewayNumber, null, message, null, null);
+                    smsManager.sendMultipartTextMessage(gatewayNumber, null, messageParts, sentPendingIntents, deliveredPendingIntents);
+                    mChatBox.setText("");
+//                    Toast.makeText(inst, "Message sent to gateway!", Toast.LENGTH_SHORT).show();
+
+                    String meUserName = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_name_telegram", null);
+                    UserChat meUser = ChatList.get_or_create_user(context, meUserName, meUserName, null);
 
                     BaseMessage chatMessage;
+                    long seconds = System.currentTimeMillis() / 1000L;
                     if (currentChat instanceof UserChat)
-                        chatMessage = new UserMessage(new Date(), text, serviceID, (UserChat)currentChat, true, BaseMessage.STATUS_SENT);
+                        chatMessage = new UserMessage(seconds, new Date(), text, serviceID, (UserChat)currentChat, true, BaseMessage.STATUS_SENT, false);
                     else if (currentChat instanceof GroupChat)
-                        chatMessage = new GroupMessage(new Date(), text, serviceID, (GroupChat)currentChat, meUser, true, BaseMessage.STATUS_SENT);
+                        chatMessage = new GroupMessage(seconds, new Date(), text, serviceID, (GroupChat)currentChat, meUser, true, BaseMessage.STATUS_SENT, false);
                     else
                         throw new IllegalArgumentException("Unknown chat type!");
-                    MessageList.addSentMessage(getApplicationContext(), chatMessage);
+                    MessageList.addSentMessage(context, chatMessage);
                     messageAdapter.notifyItemInserted(0);
                     messageRecycler.scrollToPosition(0);
                     //messageAdapter.notifyDataSetChanged();

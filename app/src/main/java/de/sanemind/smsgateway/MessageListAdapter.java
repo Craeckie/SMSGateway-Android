@@ -53,6 +53,8 @@ public class MessageListAdapter extends android.support.v7.widget.RecyclerView.A
                 return VIEW_TYPE_USER_MESSAGE_RECEIVED;
             }
             else if (chat instanceof GroupChat) {
+                if (((GroupChat)chat).isChannel())
+                    return VIEW_TYPE_GROUP_MESSAGE_RECEIVED;
                 UserChat currentMessageUser = ((GroupMessage)message).getUser();
                 List<BaseMessage> chatMessages = message.getChat().getMessages();
                 int index = message.getIndex();
@@ -60,13 +62,14 @@ public class MessageListAdapter extends android.support.v7.widget.RecyclerView.A
                     BaseMessage previousMessage = chatMessages.get(index + 1);
                     if (previousMessage instanceof GroupMessage) {
                         GroupMessage previousGroupMessage = (GroupMessage) previousMessage;
-                        if (previousGroupMessage.getUser().equals(currentMessageUser))
+                        BaseChat user = previousGroupMessage.getUser();
+                        if (user != null && previousGroupMessage.getUser().equals(currentMessageUser))
                             return VIEW_TYPE_GROUP_MESSAGE_RECEIVED_SHORT;
                     }
                 }
                 return VIEW_TYPE_GROUP_MESSAGE_RECEIVED;
             }
-            return -1;
+            return VIEW_TYPE_GROUP_MESSAGE_RECEIVED;
         }
     }
 

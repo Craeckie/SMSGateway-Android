@@ -16,14 +16,18 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
     private boolean isSent;
     private int status;
     private int index;
+    private long ID;
+    private boolean isEdit;
 
 
-    public BaseMessage(Date createdAt, String message, String serviceID, boolean isSent, int status) {
+    public BaseMessage(long ID, Date createdAt, String message, String serviceID, boolean isSent, int status, boolean isEdit) {
+        this.ID = ID;
         this.createdAt = createdAt;
         this.message = message;
         this.serviceID = serviceID;
         this.isSent = isSent;
         this.status = status;
+        this.isEdit = isEdit;
     }
 
     public Date getCreatedAt() {
@@ -32,6 +36,10 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
 
     public String getMessage() {
         return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public String getServiceID() { return serviceID; }
@@ -48,6 +56,13 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
         this.status = status;
     }
 
+    public boolean isEdit() {
+        return isEdit;
+    }
+
+    public long getID() {
+        return ID;
+    }
     public abstract BaseChat getChat();
 
     public int getIndex() {

@@ -112,9 +112,13 @@ public class ChatListFragment extends Fragment {
         intent.putExtra(EXTRA_CHAT, identifier);
         if (chat instanceof UserChat)
             intent.putExtra(EXTRA_CHAT_TYPE, "USER");
-        else if (chat instanceof GroupChat)
-            intent.putExtra(EXTRA_CHAT_TYPE, "GROUP");
-        else
+        else if (chat instanceof GroupChat) {
+            GroupChat groupChat = (GroupChat) chat;
+            if (groupChat.isChannel())
+                intent.putExtra(EXTRA_CHAT_TYPE, "CHANNEL");
+            else
+                intent.putExtra(EXTRA_CHAT_TYPE, "GROUP");
+        } else
             throw new IllegalArgumentException("Chat is of unknown type!");
         return intent;
     }
