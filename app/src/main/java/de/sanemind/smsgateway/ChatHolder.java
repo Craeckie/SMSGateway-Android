@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
+import de.sanemind.smsgateway.model.GroupChat;
+import de.sanemind.smsgateway.model.GroupMessage;
 import de.sanemind.smsgateway.model.UserChat;
 
 public class ChatHolder extends ViewHolder {
@@ -53,10 +55,18 @@ public class ChatHolder extends ViewHolder {
 //        }
         BaseMessage lastMessage = chat.getLastMessage();
         if (lastMessage != null) {
-            lastMessageText.setText(lastMessage.getMessage());
+            String text = lastMessage.getMessage();
+            if (chat instanceof GroupChat) {
+                UserChat userChat = ((GroupMessage) lastMessage).getUser();
+                if (userChat != null) {
+                    String senderName = userChat.getDisplayName();
+                    text = senderName + ": " + lastMessage.getMessage();
+                }
+            }
+            lastMessageText.setText(text);
 
             // Format the stored timestamp into a readable String using method.
-            CharSequence timeStr = DateUtils.getRelativeTimeSpanString(chat.getLastMessage().getCreatedAt().getTime());
+            CharSequence timeStr = DateUtils.getRelativeTimeSpanString(lastMessage.getCreatedAt().getTime());
             timeText.setText(timeStr);
         }
 

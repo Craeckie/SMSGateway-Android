@@ -15,7 +15,7 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
     private String serviceID;
     private boolean isSent;
     private int status;
-    private int index;
+//    private int index;
     private long ID;
     private boolean isEdit;
 
@@ -65,17 +65,22 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
     }
     public abstract BaseChat getChat();
 
-    public int getIndex() {
-        return index;
-    }
-
-    public void setIndex(int index) {
-        this.index = index;
-    }
+//    public int getIndex() {
+//        return index;
+//    }
+//
+//    public void setIndex(int index) {
+//        this.index = index;
+//    }
 
     @Override
     public int compareTo(@NonNull BaseMessage o) {
-        return o.getCreatedAt().compareTo(this.getCreatedAt());
+        long oID = o.getID();
+        if (oID != -1 || ID != -1) {
+            return oID > ID ? +1 : oID < ID ? -1 : 0;
+        } else  {
+            return o.getCreatedAt().compareTo(this.getCreatedAt());
+        }
     }
 
     @Override

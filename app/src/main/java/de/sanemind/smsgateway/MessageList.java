@@ -11,7 +11,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
+import java.util.SortedSet;
 
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
@@ -24,10 +24,11 @@ public class MessageList {
     private static boolean refreshedFromSMSInbox = false;
     //private static final Map<BaseChat, ArrayList<BaseMessage>> messageList = new java.util.HashMap<>();
 
+//    public static void addMessage(BaseMessage message) {
+//        addMessage(message, -1);
+//    }
+//    public static void addMessage(BaseMessage message, int position) {
     public static void addMessage(BaseMessage message) {
-        addMessage(message, -1);
-    }
-    public static void addMessage(BaseMessage message, int position) {
 //        ArrayList<BaseMessage> messages;
 //        if (!messageList.containsKey(message.getChat())) {
 //            messages = new ArrayList<>();
@@ -37,14 +38,15 @@ public class MessageList {
 
         //message.getChat().setMessages(messages);
         BaseChat chat = message.getChat();
-        chat.addMessage(message, position);
-        if (position == -1)
-            position = 0;
+//        chat.addMessage(message, position);
+        chat.addMessage(message);
+//        if (position == -1)
+//            position = 0;
 
-        List<BaseMessage> messages = chat.getMessages();
-        for (int i = position; i < messages.size(); i++) {
-            messages.get(i).setIndex(i);
-        }
+//        List<BaseMessage> messages = chat.getMessages();
+//        for (int i = position; i < messages.size(); i++) {
+//            messages.get(i).setIndex(i);
+//        }
     }
 
     public static BaseMessage addMessage(Context context, Date date, String body, String phoneNumber, boolean isSent) {
@@ -54,10 +56,15 @@ public class MessageList {
             msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent);
         }
         if (msg != null) {
-            List<BaseMessage> chatMessages = msg.getChat().getMessages();
-            for (int i = 0; i < 3 && i < chatMessages.size(); i++) {
-                BaseMessage currentMessage = chatMessages.get(i);
-                if (currentMessage.equals(msg)) {
+            BaseMessage currentMessage;
+            SortedSet<BaseMessage> messages = msg.getChat().getMessages();
+            if (messages.contains(msg)) {
+                currentMessage = msg.getChat().getMessages().tailSet(msg).first(); // Get the element equal to the received message
+//            List<BaseMessage> chatMessages = msg.getChat().getMessages();
+//            for (int i = 0; i < 3 && i < chatMessages.size(); i++) {
+//                BaseMessage currentMessage = chatMessages.get(i);
+//                if (currentMessage.equals(msg)) {
+
                     switch (currentMessage.getStatus()) {
                         case BaseMessage.STATUS_SENT:
                             currentMessage.setStatus(BaseMessage.STATUS_RECEIVED);
@@ -70,9 +77,9 @@ public class MessageList {
                             msg = currentMessage;
                             break;
                     }
-                    break;
+//                    break;
                 }
-            }
+//            }
         }
         else if (msg == null) {
             msg = new UserMessage(-1, date, body, "SMS", ChatList.get_or_create_user(context, null, null, phoneNumber), isSent, false);
@@ -90,7 +97,8 @@ public class MessageList {
     }
 
     public static void addSentMessage(Context context, BaseMessage message) {
-        addMessage(message, 0);
+//        addMessage(message, 0);
+        addMessage(message);
         Collections.sort(ChatList.ChatList);
 
         String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_phone_gateway", null);
@@ -114,14 +122,14 @@ public class MessageList {
 
     public static void sortChatMessages(BaseChat chat) {
 //        List<BaseMessage> messages = MessageList.messageList.get(chat);
-        Collections.sort(chat.getMessages());
+//        Collections.sort(chat.getMessages());
 
-        int index = 0;
-        for (Iterator<BaseMessage> iterator = chat.getMessages().iterator(); iterator.hasNext();) {
-            BaseMessage message = iterator.next();
-            message.setIndex(index);
-            index++;
-        }
+//        int index = 0;
+//        for (Iterator<BaseMessage> iterator = chat.getMessages().iterator(); iterator.hasNext();) {
+//            BaseMessage message = iterator.next();
+//            message.setIndex(index);
+//            index++;
+//        }
     }
 
     public static void refreshFromSMSInbox(Context context) {
@@ -178,7 +186,8 @@ public class MessageList {
                 }
             }
             if (!foundEditedMessage)
-                msg.getChat().addMessage(msg, 0);
+                msg.getChat().addMessage(msg);
+//                msg.getChat().addMessage(msg, 0);
 //            messages.add(msg);
 //            if (PhoneNumberUtils.compare(from, GatewayNumber)) {
 //                mMessageAdapter.getmMessageList().add(new UserMessage(body, GatewayUser, new Date()));

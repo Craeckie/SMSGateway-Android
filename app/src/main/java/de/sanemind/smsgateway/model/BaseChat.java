@@ -2,16 +2,17 @@ package de.sanemind.smsgateway.model;
 
 import android.support.annotation.NonNull;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public abstract class BaseChat implements Comparable<BaseChat> {
     protected String name;
     protected String nameIdentifier; //necessary for Telegram
 
-    private ArrayList<BaseMessage> messages;
+    private SortedSet<BaseMessage> messages;
 
     private Map<String, Integer> knownServices;
 
@@ -19,7 +20,7 @@ public abstract class BaseChat implements Comparable<BaseChat> {
 
     public BaseChat(String name, String nameIdentifier) {
         this.name = name;
-        messages = new ArrayList<>();
+        messages = new TreeSet<>();
         knownServices = new HashMap<>();
         this.nameIdentifier = nameIdentifier;
     }
@@ -50,16 +51,21 @@ public abstract class BaseChat implements Comparable<BaseChat> {
 
     public BaseMessage getLastMessage() {
         if (messages.size() > 0)
-            return messages.get(0);
+            return messages.first();
+//            return messages.get(0);
         else
             return null;
     }
 
-    public void addMessage(BaseMessage message, int position) {
-        if (position == -1)
-            messages.add(0, message);
-        else
-            messages.add(position, message);
+    public void addMessage(BaseMessage message) { //, int position) {
+//        if (messages.contains(message)) {
+//        }
+        messages.remove(message); // remove if it was present already
+        messages.add(message);
+//        if (position == -1)
+//            messages.add(0, message);
+//        else
+//            messages.add(position, message);
 
         int num = 1;
         if (knownServices.containsKey(message.getServiceID()))
@@ -67,7 +73,7 @@ public abstract class BaseChat implements Comparable<BaseChat> {
         knownServices.put(message.getServiceID(), num);
     }
 
-    public ArrayList<BaseMessage> getMessages() {
+    public SortedSet<BaseMessage> getMessages() {
         return messages;
     }
 

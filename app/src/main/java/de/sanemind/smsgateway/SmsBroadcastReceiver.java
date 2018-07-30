@@ -19,6 +19,8 @@ import java.util.Calendar;
 
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
+import de.sanemind.smsgateway.model.GroupMessage;
+import de.sanemind.smsgateway.model.UserChat;
 
 public class SmsBroadcastReceiver extends BroadcastReceiver {
     @SuppressWarnings("SpellCheckingInspection")
@@ -135,11 +137,18 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
             pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
         }
 
-
+        String notificationText = receivedMessage.getMessage();
+        if (receivedMessage instanceof GroupMessage) {
+            UserChat chat = ((GroupMessage) receivedMessage).getUser();
+            if (chat != null) {
+                String senderName = chat.getDisplayName();
+                notificationText = senderName + ": " + receivedMessage.getMessage();
+            }
+        }
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, NotificationChannel.DEFAULT_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle(receivedMessage.getChat().getName())
-                .setContentText(receivedMessage.getMessage())
+                .setContentText(notificationText)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(receivedMessage.getMessage()))
                 .setAutoCancel(true)

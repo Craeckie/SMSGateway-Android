@@ -6,7 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
 
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
@@ -27,7 +29,7 @@ public class MessageListAdapter extends android.support.v7.widget.RecyclerView.A
     public MessageListAdapter(Context context, BaseChat chat) {
         mContext = context;
         this.chat = chat;
-        this.curMessages = chat.getMessages();
+        this.curMessages = new ArrayList<>(chat.getMessages());
 //        if (MessageList.messageList.containsKey(user))
 //            curMessages =  MessageList.messageList.get(user);
 //        else
@@ -56,10 +58,14 @@ public class MessageListAdapter extends android.support.v7.widget.RecyclerView.A
                 if (((GroupChat)chat).isChannel())
                     return VIEW_TYPE_GROUP_MESSAGE_RECEIVED;
                 UserChat currentMessageUser = ((GroupMessage)message).getUser();
-                List<BaseMessage> chatMessages = message.getChat().getMessages();
-                int index = message.getIndex();
-                if (index < chatMessages.size() - 1) {
-                    BaseMessage previousMessage = chatMessages.get(index + 1);
+                SortedSet<BaseMessage> chatMessages = message.getChat().getMessages();
+//                int index = message.getIndex();
+//                if (index < curMessages.size() - 1) {
+//                    BaseMessage previousMessage = chatMessages.get(index + 1);
+                    //TODO: correct?
+                SortedSet<BaseMessage> previousMessages = chatMessages.headSet(message);
+                if (previousMessages.size() > 0) {
+                    BaseMessage previousMessage = previousMessages.first();
                     if (previousMessage instanceof GroupMessage) {
                         GroupMessage previousGroupMessage = (GroupMessage) previousMessage;
                         BaseChat user = previousGroupMessage.getUser();

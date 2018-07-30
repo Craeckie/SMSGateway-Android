@@ -116,7 +116,7 @@ public class GatewayUtils {
                                     messageBody,
                                     identifier,
                                     ChatList.get_or_create_group(context, to, to, false),
-                                    null, // TODO: correct?
+                                    ChatList.get_meUser(context), // TODO: correct?
                                     isSent,
                                     isEdit);
                         } else if (!isSent && to != null && from != null) { // Somebody sent to a group

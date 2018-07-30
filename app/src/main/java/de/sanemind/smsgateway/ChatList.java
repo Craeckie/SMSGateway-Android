@@ -80,4 +80,9 @@ public class ChatList {
         ChatList.add(user);
         return user;
     }
+
+    public static UserChat get_meUser(Context context) {
+        String meUserName = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_name_telegram", null);
+        return get_or_create_user(context, meUserName, meUserName, null);
+    }
 }

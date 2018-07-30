@@ -225,7 +225,7 @@ public class MessageListActivity extends PermissionRequestActivity {
                     PendingIntent messageSent = PendingIntent.getBroadcast(context, SmsBroadcastReceiver.SMS_SENT, broadcastReceiverSentIntent, 0);
                     Intent broadcastReceiverDeliveredIntent = new Intent(context, SmsBroadcastReceiver.class);
                     broadcastReceiverDeliveredIntent.putExtra("id", SmsBroadcastReceiver.SMS_DELIVERED);
-                    PendingIntent messageDelivered = PendingIntent.getBroadcast(context, SmsBroadcastReceiver.SMS_SENT, broadcastReceiverSentIntent, 0);
+                    PendingIntent messageDelivered = PendingIntent.getBroadcast(context, SmsBroadcastReceiver.SMS_DELIVERED, broadcastReceiverDeliveredIntent, 0);
 
                     ArrayList<String> messageParts = smsManager.divideMessage(message);
                     ArrayList<PendingIntent> sentPendingIntents = new ArrayList<>(Collections.nCopies(messageParts.size(), messageSent));
@@ -239,15 +239,15 @@ public class MessageListActivity extends PermissionRequestActivity {
                     mChatBox.setText("");
 //                    Toast.makeText(inst, "Message sent to gateway!", Toast.LENGTH_SHORT).show();
 
-                    String meUserName = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_name_telegram", null);
-                    UserChat meUser = ChatList.get_or_create_user(context, meUserName, meUserName, null);
+//                    String meUserName = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_name_telegram", null);
+//                    UserChat meUser = ChatList.get_or_create_user(context, meUserName, meUserName, null);
 
                     BaseMessage chatMessage;
                     long seconds = System.currentTimeMillis() / 1000L;
                     if (currentChat instanceof UserChat)
                         chatMessage = new UserMessage(seconds, new Date(), text, serviceID, (UserChat)currentChat, true, BaseMessage.STATUS_SENT, false);
                     else if (currentChat instanceof GroupChat)
-                        chatMessage = new GroupMessage(seconds, new Date(), text, serviceID, (GroupChat)currentChat, meUser, true, BaseMessage.STATUS_SENT, false);
+                        chatMessage = new GroupMessage(seconds, new Date(), text, serviceID, (GroupChat)currentChat, ChatList.get_meUser(context), true, BaseMessage.STATUS_SENT, false);
                     else
                         throw new IllegalArgumentException("Unknown chat type!");
                     MessageList.addSentMessage(context, chatMessage);
