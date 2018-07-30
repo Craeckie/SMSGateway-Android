@@ -2,6 +2,7 @@ package de.sanemind.smsgateway;
 
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.text.Html;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -60,10 +61,14 @@ public class ChatHolder extends ViewHolder {
                 UserChat userChat = ((GroupMessage) lastMessage).getUser();
                 if (userChat != null) {
                     String senderName = userChat.getDisplayName();
-                    text = senderName + ": " + lastMessage.getMessage();
+                    text = "<font color='#4D83B3'>" + senderName + "</font>: " + lastMessage.getMessage();
                 }
             }
-            lastMessageText.setText(text);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                lastMessageText.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
+            } else {
+                lastMessageText.setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE);
+            }
 
             // Format the stored timestamp into a readable String using method.
             CharSequence timeStr = DateUtils.getRelativeTimeSpanString(lastMessage.getCreatedAt().getTime());

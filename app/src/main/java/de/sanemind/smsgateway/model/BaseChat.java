@@ -2,6 +2,7 @@ package de.sanemind.smsgateway.model;
 
 import android.support.annotation.NonNull;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -16,9 +17,12 @@ public abstract class BaseChat implements Comparable<BaseChat> {
 
     private Map<String, Integer> knownServices;
 
+    private ChatList chatList;
+
     private boolean updatedFromContacts = false;
 
-    public BaseChat(String name, String nameIdentifier) {
+    public BaseChat(ChatList chatList, String name, String nameIdentifier) {
+        this.chatList = chatList;
         this.name = name;
         messages = new TreeSet<>();
         knownServices = new HashMap<>();
@@ -41,6 +45,14 @@ public abstract class BaseChat implements Comparable<BaseChat> {
         this.nameIdentifier = nameIdentifier;
     }
 
+    public ChatList getChatList() {
+        return chatList;
+    }
+
+    public void setChatList(ChatList chatList) {
+        this.chatList = chatList;
+    }
+
     public boolean isUpdatedFromContacts() {
         return updatedFromContacts;
     }
@@ -52,16 +64,33 @@ public abstract class BaseChat implements Comparable<BaseChat> {
     public BaseMessage getLastMessage() {
         if (messages.size() > 0)
             return messages.first();
-//            return messages.get(0);
         else
             return null;
+    }
+
+    public BaseMessage getMessageFromID(long ID) {
+
+        SortedSet<BaseMessage> tailSet = messages.tailSet(new UserMessage(ID, new Date(0), null, null, null, false, false));
+        if (tailSet.size() > 0) {
+            BaseMessage msg = tailSet.first();
+            if (msg.getID() == ID)
+                return msg;
+        }
+        return null;
     }
 
     public void addMessage(BaseMessage message) { //, int position) {
 //        if (messages.contains(message)) {
 //        }
-        messages.remove(message); // remove if it was present already
-        messages.add(message);
+//        SortedSet<BaseMessage> followingMessages = messages.tailSet(message);
+//        if (followingMessages.size() > 0)
+//            followingMessages.first()
+        BaseMessage refMessage = getMessageFromID(message.getID());
+        if (message.isEdit() || refMessage == null || !refMessage.isEdit()) {
+            if (refMessage != null)
+                messages.remove(refMessage);
+            messages.add(message);
+        }
 //        if (position == -1)
 //            messages.add(0, message);
 //        else
@@ -126,10 +155,10 @@ public abstract class BaseChat implements Comparable<BaseChat> {
     public boolean equals(Object obj) {
         if (obj instanceof BaseChat) {
             BaseChat chat = (BaseChat) obj;
-            if (obj instanceof UserChat && this instanceof UserChat)
-                return ((UserChat)obj).equals((UserChat)this);
-            else
-                return chat.getName().equals(getName()) && chat.getIdentifier().equals(getIdentifier());
+//            if (obj instanceof UserChat && this instanceof UserChat)
+//                return ((UserChat)obj).equals((UserChat)this);
+//            else
+            return chat.getName().equals(getName()) && chat.getIdentifier().equals(getIdentifier());
         }
 
         return super.equals(obj);

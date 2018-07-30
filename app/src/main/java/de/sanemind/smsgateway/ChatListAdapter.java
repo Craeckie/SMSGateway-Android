@@ -7,18 +7,21 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import de.sanemind.smsgateway.model.BaseChat;
+import de.sanemind.smsgateway.model.ChatList;
 
 public class ChatListAdapter extends RecyclerView.Adapter {
 
     private Context mContext;
+    private ChatList chatList;
 
-    public ChatListAdapter(Context context) {
+    public ChatListAdapter(Context context, ChatList chatList) {
         mContext = context;
+        this.chatList = chatList;
     }
 
     @Override
     public int getItemCount() {
-        return ChatList.ChatList.size();
+        return chatList.ChatList.size();
     }
 
 
@@ -39,8 +42,12 @@ public class ChatListAdapter extends RecyclerView.Adapter {
     // Passes the message object to a ViewHolder so that the contents can be bound to UI.
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        BaseChat user = ChatList.ChatList.get(position);
+        BaseChat user = chatList.ChatList.get(position);
 
         ((ChatHolder) holder).bind(user);
+    }
+
+    public ChatList getChatList() {
+        return chatList;
     }
 }

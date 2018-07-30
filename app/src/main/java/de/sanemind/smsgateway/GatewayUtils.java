@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.sanemind.smsgateway.model.BaseMessage;
+import de.sanemind.smsgateway.model.ChatList;
 import de.sanemind.smsgateway.model.GroupMessage;
 import de.sanemind.smsgateway.model.UserMessage;
 
@@ -16,11 +17,18 @@ public class GatewayUtils {
     private static Pattern oldNumberPattern = Pattern.compile("^(From|To): (.*) \\(([0-9+]+)\\)$");
     private static Pattern oldFromGroupPattern = Pattern.compile("^From: (.*) \\(([0-9+]+)\\)@(.*)$");
 
+    private static Pattern idPattern = Pattern.compile("^ID: ([0-9]+)$");
+
     public static BaseMessage tryParseGatewayMessage(Context context, String body, Date date, boolean isSent) {
         BaseMessage message = null;
         String[] lines = body.split("\n");
         if (lines.length > 2) {
             String identifier = lines[0].trim();
+            ChatList chatList = Messengers.listForIdentifier(context, identifier);
+            if (chatList == null) {
+                chatList = Messengers.getSMS(context);
+                identifier = "SMS";
+            }
             String from = null;
             String to = null;
             String type = null;
@@ -41,15 +49,9 @@ public class GatewayUtils {
                 } else if (line.isEmpty()) {
                     messageStarted = true;
                     messageBody = "";
-                } else if (line.matches("^ID: ([0-9]+)$")) {
-                    try {
-                        ID = Integer.parseInt(line.substring("ID: ".length()));
-                    } catch (NumberFormatException e) {
-                        Toast.makeText(context, "Invalid " + line, Toast.LENGTH_LONG);
-                    }
-                } else if (line.matches("^Type: (.+)$")) {
+                } else if (line.startsWith("Type: ")) {
                     type = line.substring("Type: ".length()).toLowerCase();
-                } else if (line.matches("^From: (.+)$")) {
+                } else if (line.startsWith("From: ")) {
                     from = line.substring("From: ".length());
                     isSent = false;
                     // TODO: temporarily support old format for messages sent to groups
@@ -67,7 +69,7 @@ public class GatewayUtils {
                             type = "user";
                         }
                     }
-                } else if (line.matches("^To: (.+)$")) {
+                } else if (line.startsWith("To: ")) {
                     to = line.substring("To: ".length());
                     // TODO: temporarily support old format for messages sent to groups
 //                    Matcher matcherNumber = oldNumberPattern.matcher(line);
@@ -77,17 +79,27 @@ public class GatewayUtils {
 //                        if (ChatList.find_group(context, to, false) != null)
 //                            type = "group";
 //                    }
-                } else if (line.matches("^Group: (.+)$")) {
+                } else if (line.startsWith("Group: ")) {
                     to = line.substring("Group: ".length());
                     type = "group";
-                } else if (line.matches("^Channel: (.+)$")) {
+                } else if (line.startsWith("Channel: ")) {
                     to = line.substring("Channel: ".length());
                     type = "channel";
-                } else if (line.matches("^Phone: (.+)$")) {
+                } else if (line.startsWith("Phone: ")) {
                     phone = line.substring("Phone: ".length());
-                } else if (line.matches("^Edit: (.+)$")) {
+                } else if (line.startsWith("Edit: ")) {
                     if (line.substring("Edit: ".length()).equalsIgnoreCase("true"))
                         isEdit = true;
+                } else if (line.equals("Status: Processed")) {
+                    // Ignore the messages just indicating that this message was about to be sent to TG
+                    return new UserMessage(Long.MIN_VALUE, new Date(0), "", "", null, false, false);
+
+                } else if (idPattern.matcher(line).matches()) { // For performance the last check
+                    try {
+                        ID = Integer.parseInt(line.substring("ID: ".length()));
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(context, "Invalid " + line, Toast.LENGTH_LONG);
+                    }
                 }
 //                } else { // Unknown header, assume that message starts for now..
 //                    messageStarted = true;
@@ -104,7 +116,7 @@ public class GatewayUtils {
                                 date,
                                 messageBody,
                                 identifier,
-                                ChatList.get_or_create_group(context, user, user, true),
+                                chatList.get_or_create_group(context, user, user, true),
                                 null,
                                 isSent,
                                 isEdit);
@@ -115,8 +127,8 @@ public class GatewayUtils {
                                     date,
                                     messageBody,
                                     identifier,
-                                    ChatList.get_or_create_group(context, to, to, false),
-                                    ChatList.get_meUser(context), // TODO: correct?
+                                    chatList.get_or_create_group(context, to, to, false),
+                                    chatList.get_meUser(context), // TODO: correct?
                                     isSent,
                                     isEdit);
                         } else if (!isSent && to != null && from != null) { // Somebody sent to a group
@@ -125,8 +137,8 @@ public class GatewayUtils {
                                     date,
                                     messageBody,
                                     identifier,
-                                    ChatList.get_or_create_group(context, to, to, false),
-                                    ChatList.get_or_create_user(context, from, from, phone),
+                                    chatList.get_or_create_group(context, to, to, false),
+                                    chatList.get_or_create_user(context, from, from, phone),
                                     isSent,
                                     isEdit);
                         } else {
@@ -142,7 +154,7 @@ public class GatewayUtils {
                                 date,
                                 messageBody,
                                 identifier,
-                                ChatList.get_or_create_user(context, to, to, phone),
+                                chatList.get_or_create_user(context, to, to, phone),
                                 isSent,
                                 isEdit);
                     } else if (!isSent && from != null){ // Somebody sent me a message
@@ -151,7 +163,7 @@ public class GatewayUtils {
                                 date,
                                 messageBody,
                                 identifier,
-                                ChatList.get_or_create_user(context, from, from, phone),
+                                chatList.get_or_create_user(context, from, from, phone),
                                 isSent,
                                 isEdit);
                     } else {

@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 
@@ -41,6 +43,9 @@ public class MessageListAdapter extends android.support.v7.widget.RecyclerView.A
         return curMessages.size();
     }
 
+    public void setMessages(Collection<BaseMessage> curMessages) {
+        this.curMessages = new ArrayList<>(curMessages);
+    }
 
     // Determines the appropriate ViewType according to the sender of the message.
     @Override
@@ -63,9 +68,11 @@ public class MessageListAdapter extends android.support.v7.widget.RecyclerView.A
 //                if (index < curMessages.size() - 1) {
 //                    BaseMessage previousMessage = chatMessages.get(index + 1);
                     //TODO: correct?
-                SortedSet<BaseMessage> previousMessages = chatMessages.headSet(message);
+                SortedSet<BaseMessage> previousMessages = chatMessages.tailSet(message);
                 if (previousMessages.size() > 0) {
-                    BaseMessage previousMessage = previousMessages.first();
+                    Iterator<BaseMessage> it = previousMessages.iterator();
+                    it.next(); // Skip the current message
+                    BaseMessage previousMessage = it.next();
                     if (previousMessage instanceof GroupMessage) {
                         GroupMessage previousGroupMessage = (GroupMessage) previousMessage;
                         BaseChat user = previousGroupMessage.getUser();

@@ -27,6 +27,7 @@ class ReceivedMessageHolder extends RecyclerView.ViewHolder {
 
     void bind(BaseMessage message) {
         messageText.setText(message.getMessage());
+//        messageText.setText(message.getID() + ": " + message.getMessage());
 
         if (profileImage != null) {
 
@@ -47,7 +48,10 @@ class ReceivedMessageHolder extends RecyclerView.ViewHolder {
 
         // Format the stored timestamp into a readable String using method.
         long time = message.getCreatedAt().getTime();
-        timeText.setText(Utils.formatRelativeTime(itemView.getContext(), time));
+        CharSequence timeStr = Utils.formatRelativeTime(itemView.getContext(), time);
+        if (message.isEdit())
+            timeStr = "edited  " + timeStr;
+        timeText.setText(timeStr);
 //        String name = message.getChat().getName();
         if (nameText != null && message instanceof GroupMessage) {
             GroupMessage groupMessage = (GroupMessage) message;

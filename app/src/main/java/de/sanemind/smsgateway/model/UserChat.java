@@ -2,19 +2,13 @@ package de.sanemind.smsgateway.model;
 
 import android.content.Context;
 import android.net.Uri;
-import android.os.Build;
-import android.support.annotation.NonNull;
-import android.telephony.PhoneNumberUtils;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import de.sanemind.smsgateway.Utils;
-
 public class UserChat extends BaseChat {
-    public UserChat(String name, String nameIdentifier) {
-        super(name, nameIdentifier);
+    public UserChat(ChatList chatList, String name, String nameIdentifier) {
+        super(chatList, name, nameIdentifier);
         this.phoneNumbers = new HashSet<>();
         this.nameIdentifier = nameIdentifier;
     }
@@ -44,7 +38,7 @@ public class UserChat extends BaseChat {
         PhoneNumber curNum = null;
         for (PhoneNumber num : phoneNumbers) {
             if (num.equals(phoneNumber)) {
-                num.priority = Math.min(priority, num.priority);
+                num.setPriority(Math.min(priority, num.getPriority()));
                 curNum = num;
             }
         }
@@ -75,13 +69,13 @@ public class UserChat extends BaseChat {
         this.pictureUri = pictureUri;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof UserChat) {
-            UserChat u = (UserChat) obj;
-            return ! Collections.disjoint(phoneNumbers, u.phoneNumbers);
-        } else return super.equals(obj);
-    }
+//    @Override
+//    public boolean equals(Object obj) {
+//        if (obj instanceof UserChat) {
+//            UserChat u = (UserChat) obj;
+//            return ! Collections.disjoint(phoneNumbers, u.phoneNumbers);
+//        } else return super.equals(obj);
+//    }
 
     @Override
     public String getIdentifier() {
@@ -90,56 +84,6 @@ public class UserChat extends BaseChat {
         else
             return name;
     }
-
-    public class PhoneNumber implements Comparable<PhoneNumber> {
-        private String number;
-        private int priority;
-
-        public PhoneNumber(Context context, String number, int priority) {
-            setNumber(context, number);
-            this.priority = priority;
-        }
-
-        public String getNumber() {
-            return "+" + number;
-        }
-
-        public void setNumber(Context context, String number) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                number = PhoneNumberUtils.normalizeNumber(number);
-            }
-            if (number.startsWith("0"))
-                number = Utils.getCountryCode(context) + number.substring(1);
-            else if (number.startsWith("+"))
-                number = number.substring(1);
-            this.number = number;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof PhoneNumber)
-                return PhoneNumberUtils.compare(number, ((PhoneNumber)obj).getNumber());
-            else if (obj instanceof String)
-                return PhoneNumberUtils.compare(number, ((String)obj));
-            else
-                return super.equals(obj);
-        }
-
-        @Override
-        public int hashCode() {
-            return number.hashCode();
-        }
-
-        @Override
-        public String toString() {
-            return number;
-        }
-
-        @Override
-        public int compareTo(@NonNull PhoneNumber o) {
-            return priority - o.priority;
-        }
-    }
-
 }
+
 

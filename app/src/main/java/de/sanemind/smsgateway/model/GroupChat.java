@@ -1,8 +1,8 @@
 package de.sanemind.smsgateway.model;
 
 public class GroupChat extends BaseChat {
-    public GroupChat(String name, String groupIdentifier, boolean isChannel) {
-        super(name, groupIdentifier);
+    public GroupChat(ChatList chatList, String name, String groupIdentifier, boolean isChannel) {
+        super(chatList, name, groupIdentifier);
         this.isChannel = isChannel;
     }
 

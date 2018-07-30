@@ -21,11 +21,14 @@ public class SentMessageHolder extends ViewHolder {
 
     void bind(BaseMessage message) {
         messageText.setText(message.getMessage());
+//        messageText.setText(message.getID() + ": " + message.getMessage());
 
         // Format the stored timestamp into a readable String
         long time = message.getCreatedAt().getTime();
-
-        timeText.setText(Utils.formatRelativeTime(itemView.getContext(), time));
+        CharSequence timeStr = Utils.formatRelativeTime(itemView.getContext(), time);
+        if (message.isEdit())
+            timeStr = "edited  " + timeStr;
+        timeText.setText(timeStr);
 
         switch (message.getStatus()) {
             case BaseMessage.STATUS_SENT:

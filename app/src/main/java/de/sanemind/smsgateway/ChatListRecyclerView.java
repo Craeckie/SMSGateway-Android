@@ -20,8 +20,15 @@ public class ChatListRecyclerView extends RecyclerView {
         super(context, attrs, defStyle);
     }
 
+    ChatListAdapter chatListAdapter;
+    //@Override
+    public void setAdapter(ChatListAdapter adapter) {
+        super.setAdapter(adapter);
+        chatListAdapter = adapter;
+    }
+
     public void updateAdapter() {
-        Collections.sort(ChatList.ChatList);
+        Collections.sort(chatListAdapter.getChatList().ChatList);
         getAdapter().notifyDataSetChanged();
     }
 }

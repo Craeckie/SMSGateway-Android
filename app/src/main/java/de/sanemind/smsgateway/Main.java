@@ -24,6 +24,8 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
+import de.sanemind.smsgateway.model.ChatList;
+
 public class Main extends PermissionRequestActivity {
 
     /**
@@ -82,7 +84,7 @@ public class Main extends PermissionRequestActivity {
                         .setAction("Show notification", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                new SmsBroadcastReceiver().openMessageNotification(getApplicationContext(), ChatList.GatewayUser.getLastMessage(), ChatListFragment.getInstance());
+                                new SmsBroadcastReceiver().openMessageNotification(getApplicationContext(), Messengers.GatewayUser.getLastMessage(), ChatListFragment.getInstance());
                             }
                         }).show();
             }
@@ -183,11 +185,11 @@ public class Main extends PermissionRequestActivity {
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            if (position == 0) {
-                return ChatListFragment.newInstance(position + 1);
-            } else {
-                return PlaceholderFragment.newInstance(position + 1);
-            }
+//            if (position == 0) {
+            return ChatListFragment.newInstance(position + 1);
+//            } else {
+//                return PlaceholderFragment.newInstance(position + 1);
+//            }
         }
 
         @Override

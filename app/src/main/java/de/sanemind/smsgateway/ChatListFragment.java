@@ -14,6 +14,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import de.sanemind.smsgateway.model.BaseChat;
+import de.sanemind.smsgateway.model.ChatList;
 import de.sanemind.smsgateway.model.GroupChat;
 import de.sanemind.smsgateway.model.UserChat;
 
@@ -24,11 +25,13 @@ public class ChatListFragment extends Fragment {
      */
     private static final String ARG_SECTION_NUMBER = "1";
 
+    public static final String EXTRA_MESSENGER = "de.sanemind.smsgateway.MESSENGER";
     public static final String EXTRA_CHAT = "de.sanemind.smsgateway.CHAT";
     public static final String EXTRA_CHAT_TYPE = "de.sanemind.smsgateway.CHAT_TYPE";
 
     private ChatListRecyclerView chatListRecycler;
     private ChatListAdapter chatListAdapter;
+    private ChatList chatList;
 
     private static ChatListFragment instance;
 
@@ -59,11 +62,27 @@ public class ChatListFragment extends Fragment {
                                 Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         View rootView = inflater.inflate(R.layout.fragment_user_list, container, false);
+        Context context = getContext();
+
+        int section = getArguments().getInt(ARG_SECTION_NUMBER);
+        switch (section) {
+            case 1:
+                chatList = Messengers.getTG(context);
+                break;
+            case 2:
+                chatList = Messengers.getFB(context);
+                break;
+            case 3:
+                chatList = Messengers.getSMS(context);
+                break;
+            default:
+                throw new IllegalArgumentException("ChatListFragment was opened with invalid section number: " + section);
+        }
 
         instance = this;
 
         chatListRecycler = (ChatListRecyclerView) rootView.findViewById(R.id.recyclerview_user_list);
-        chatListAdapter = new ChatListAdapter(inflater.getContext());
+        chatListAdapter = new ChatListAdapter(inflater.getContext(), chatList);
         chatListRecycler.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
         chatListRecycler.setAdapter(chatListAdapter);
 
@@ -104,12 +123,14 @@ public class ChatListFragment extends Fragment {
 
     public Intent getOpenChatIntent(Context context, BaseChat chat) {
         Intent intent = new Intent(context, MessageListActivity.class);
-        String identifier = chat.getNameIdentifier();
-        if (identifier == null)
-            identifier = chat.getName();
-        if (identifier == null)
-            identifier = chat.getIdentifier();
-        intent.putExtra(EXTRA_CHAT, identifier);
+        String chatName = chat.getNameIdentifier();
+        if (chatName == null)
+            chatName = chat.getName();
+        if (chatName == null)
+            chatName = chat.getIdentifier();
+        String identifier = Messengers.identifierForList(context, chat.getChatList());
+        intent.putExtra(EXTRA_MESSENGER, identifier);
+        intent.putExtra(EXTRA_CHAT, chatName);
         if (chat instanceof UserChat)
             intent.putExtra(EXTRA_CHAT_TYPE, "USER");
         else if (chat instanceof GroupChat) {

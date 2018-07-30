@@ -1,8 +1,11 @@
 package de.sanemind.smsgateway.model;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 
 import java.util.Date;
+
+import de.sanemind.smsgateway.Messengers;
 
 public abstract class BaseMessage implements Comparable<BaseMessage> {
 
@@ -43,6 +46,10 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
     }
 
     public String getServiceID() { return serviceID; }
+
+    public ChatList getChatList(Context context) {
+        return Messengers.listForIdentifier(context, serviceID);
+    }
 
     public boolean isSent() {
         return isSent;

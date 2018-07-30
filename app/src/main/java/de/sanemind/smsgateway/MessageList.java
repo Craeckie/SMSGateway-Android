@@ -10,16 +10,17 @@ import android.telephony.PhoneNumberUtils;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.SortedSet;
 
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
+import de.sanemind.smsgateway.model.ChatList;
 import de.sanemind.smsgateway.model.GroupMessage;
 import de.sanemind.smsgateway.model.UserChat;
 import de.sanemind.smsgateway.model.UserMessage;
 
 public class MessageList {
+
+
 
     private static boolean refreshedFromSMSInbox = false;
     //private static final Map<BaseChat, ArrayList<BaseMessage>> messageList = new java.util.HashMap<>();
@@ -39,6 +40,8 @@ public class MessageList {
         //message.getChat().setMessages(messages);
         BaseChat chat = message.getChat();
 //        chat.addMessage(message, position);
+        chat.getMessages().remove(message);
+//        }
         chat.addMessage(message);
 //        if (position == -1)
 //            position = 0;
@@ -56,42 +59,45 @@ public class MessageList {
             msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent);
         }
         if (msg != null) {
-            BaseMessage currentMessage;
-            SortedSet<BaseMessage> messages = msg.getChat().getMessages();
-            if (messages.contains(msg)) {
-                currentMessage = msg.getChat().getMessages().tailSet(msg).first(); // Get the element equal to the received message
-//            List<BaseMessage> chatMessages = msg.getChat().getMessages();
-//            for (int i = 0; i < 3 && i < chatMessages.size(); i++) {
-//                BaseMessage currentMessage = chatMessages.get(i);
-//                if (currentMessage.equals(msg)) {
-
-                    switch (currentMessage.getStatus()) {
-                        case BaseMessage.STATUS_SENT:
-                            currentMessage.setStatus(BaseMessage.STATUS_RECEIVED);
-                            //Toast.makeText(context, "Message forwarded to Telegram!", Toast.LENGTH_SHORT).show();
-                            return null;
-                        case BaseMessage.STATUS_RECEIVED:
-                            currentMessage.setStatus(BaseMessage.STATUS_FORWARDED);
-                            return null;
-                        case BaseMessage.STATUS_FORWARDED:
-                            msg = currentMessage;
-                            break;
-                    }
-//                    break;
-                }
+            BaseMessage currentMessage = null;
+            BaseChat chat = msg.getChat();
+            if (isSent) {
+                BaseMessage refMessage = chat.getMessageFromID(Long.MAX_VALUE);
+                if (refMessage != null)
+                    chat.getMessages().remove(refMessage);
+            }
+//            if (messages.containsKey(msg.getID())) {
+//                currentMessage = msg.getChat().getMessages().get(msg.getID()); // Get the element with the same ID as the received message
 //            }
+//            if (currentMessage != null) {
+//                    switch (currentMessage.getStatus()) {
+//                        case BaseMessage.STATUS_SENT:
+//                            currentMessage.setStatus(BaseMessage.STATUS_RECEIVED);
+//                            //Toast.makeText(context, "Message forwarded to Telegram!", Toast.LENGTH_SHORT).show();
+//                        case BaseMessage.STATUS_FORWARDED:
+//                            msg = currentMessage;
+//                            break;
+//                        case BaseMessage.STATUS_RECEIVED:
+//                            currentMessage.setStatus(BaseMessage.STATUS_FORWARDED);
+//                            return null;
+//                    }
+////                    break;
+//                }
+////            }
         }
         else if (msg == null) {
-            msg = new UserMessage(-1, date, body, "SMS", ChatList.get_or_create_user(context, null, null, phoneNumber), isSent, false);
+            msg = new UserMessage(-1, date, body, "SMS", Messengers.getSMS(context).get_or_create_user(context, null, null, phoneNumber), isSent, false);
         }
         MessageList.addMessage(msg);
+        ChatList chatList = msg.getChatList(context);
+        //TODO: do not add user to the ChatList which posted to a group, so we don't need to remove it
         if (msg instanceof GroupMessage) {
             GroupMessage groupMsg = (GroupMessage)msg;
             UserChat user = groupMsg.getUser();
             if (user != null && user.getMessages().size() == 0)
-                ChatList.ChatList.remove(user);
+                chatList.ChatList.remove(user);
         }
-        Collections.sort(ChatList.ChatList);
+        Collections.sort(chatList.ChatList);
 //        MessageList.sortChatMessages(msg.getChat());
         return msg;
     }
@@ -99,7 +105,7 @@ public class MessageList {
     public static void addSentMessage(Context context, BaseMessage message) {
 //        addMessage(message, 0);
         addMessage(message);
-        Collections.sort(ChatList.ChatList);
+        Collections.sort(message.getChatList(context).ChatList);
 
         String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_phone_gateway", null);
 
@@ -142,14 +148,9 @@ public class MessageList {
 
 //        messageList.addAll(sentMessages);
 //        messageList.addAll(receivedMessages);
-        for (Iterator<BaseChat> iterator = ChatList.ChatList.iterator(); iterator.hasNext();) {
-            BaseChat chat = iterator.next();
-            if (chat.getMessages().size() == 0)
-                iterator.remove();
-            else
-                sortChatMessages(chat);
-        }
-        Collections.sort(ChatList.ChatList);
+
+//        Collections.sort(ChatList.ChatList);
+        Messengers.cleanChats();
     }
 
     private static void getMessages(Context context, String uri, boolean isSent) {
@@ -175,17 +176,20 @@ public class MessageList {
                 msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent);
             }
             if (msg == null) {
-                msg = new UserMessage(-1, date, body, "SMS", ChatList.get_or_create_user(context, address, address, address), isSent, false);
-            } else if (msg.isEdit()) {
-                for (BaseMessage cur_msg : msg.getChat().getMessages()) {
-                    if (cur_msg.getID() == msg.getID()) {
-                        cur_msg.setMessage(msg.getMessage());
-                        foundEditedMessage = true;
-                        break;
-                    }
-                }
+                msg = new UserMessage(-1, date, body, "SMS", Messengers.getSMS(context).get_or_create_user(context, address, address, address), isSent, false);
             }
-            if (!foundEditedMessage)
+//            } else if (msg.isEdit()) {
+//                for (BaseMessage cur_msg : msg.getChat().getMessages()) {
+//                    if (cur_msg.getID() == msg.getID()) {
+//                        cur_msg.setMessage(msg.getMessage());
+//                        foundEditedMessage = true;
+//                        break;
+//                    }
+//                }
+//            }
+//            if (!foundEditedMessage)
+            BaseChat chat = msg.getChat();
+            if (chat != null) // Is message disposable?
                 msg.getChat().addMessage(msg);
 //                msg.getChat().addMessage(msg, 0);
 //            messages.add(msg);

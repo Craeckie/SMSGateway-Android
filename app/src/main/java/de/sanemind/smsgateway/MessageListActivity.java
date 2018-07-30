@@ -34,6 +34,7 @@ import javax.crypto.NoSuchPaddingException;
 
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
+import de.sanemind.smsgateway.model.ChatList;
 import de.sanemind.smsgateway.model.GroupChat;
 import de.sanemind.smsgateway.model.GroupMessage;
 import de.sanemind.smsgateway.model.UserChat;
@@ -48,6 +49,7 @@ public class MessageListActivity extends PermissionRequestActivity {
     private Button mSendButton;
     private TextView mChatBox;
 
+    ChatList chatList;
     BaseChat currentChat = null;
 
     String standardService = null;
@@ -91,8 +93,13 @@ public class MessageListActivity extends PermissionRequestActivity {
 
     public void messageReceived(BaseMessage message) {
         if (message.getChat().equals(currentChat)) {
-            messageAdapter.notifyItemInserted(0);
-            messageRecycler.scrollToPosition(0);
+            messageAdapter.setMessages(message.getChat().getMessages());
+            if (message.isSent() && !message.isEdit())
+                messageAdapter.notifyItemChanged(0);
+            else {
+                messageAdapter.notifyItemInserted(0);
+                messageRecycler.scrollToPosition(0);
+            }
         }
     }
 
@@ -117,10 +124,12 @@ public class MessageListActivity extends PermissionRequestActivity {
         }
 
         Intent intent = getIntent();
+        String messengerIdentifier = intent.getStringExtra(ChatListFragment.EXTRA_MESSENGER);
         String chatName = intent.getStringExtra(ChatListFragment.EXTRA_CHAT);
         String chatType = intent.getStringExtra(ChatListFragment.EXTRA_CHAT_TYPE);
+        chatList = Messengers.listForIdentifier(getApplicationContext(), messengerIdentifier);
         if (chatType.equals("USER")) {
-            currentChat = ChatList.get_or_create_user(getApplicationContext(), chatName, chatName, chatName);
+            currentChat = chatList.get_or_create_user(getApplicationContext(), chatName, chatName, chatName);
             titleText.setText(currentChat.getName() + "\n" + currentChat.getIdentifier());
             ImageView profileImage = (ImageView) findViewById(R.id.image_message_profile);
             UserChat userChat = (UserChat) currentChat;
@@ -132,11 +141,11 @@ public class MessageListActivity extends PermissionRequestActivity {
             }
         }
         else if (chatType.equals("GROUP")) {
-            currentChat = ChatList.get_or_create_group(getApplicationContext(), chatName, chatName, false);
+            currentChat = chatList.get_or_create_group(getApplicationContext(), chatName, chatName, false);
             titleText.setText( currentChat.getDisplayName());
         }
         else if (chatType.equals("CHANNEL")) {
-            currentChat = ChatList.get_or_create_group(getApplicationContext(), chatName, chatName, true);
+            currentChat = chatList.get_or_create_group(getApplicationContext(), chatName, chatName, true);
             titleText.setText(currentChat.getDisplayName());
         } else
             throw new IllegalArgumentException("Unknown chat type!");
@@ -243,14 +252,16 @@ public class MessageListActivity extends PermissionRequestActivity {
 //                    UserChat meUser = ChatList.get_or_create_user(context, meUserName, meUserName, null);
 
                     BaseMessage chatMessage;
-                    long seconds = System.currentTimeMillis() / 1000L;
+//                    long seconds = System.currentTimeMillis() / 1000L;
                     if (currentChat instanceof UserChat)
-                        chatMessage = new UserMessage(seconds, new Date(), text, serviceID, (UserChat)currentChat, true, BaseMessage.STATUS_SENT, false);
+                        chatMessage = new UserMessage(Long.MAX_VALUE, new Date(), text, serviceID, (UserChat)currentChat, true, BaseMessage.STATUS_SENT, false);
                     else if (currentChat instanceof GroupChat)
-                        chatMessage = new GroupMessage(seconds, new Date(), text, serviceID, (GroupChat)currentChat, ChatList.get_meUser(context), true, BaseMessage.STATUS_SENT, false);
+                       chatMessage = new GroupMessage(Long.MAX_VALUE, new Date(), text, serviceID, (GroupChat)currentChat, chatList.get_meUser(context), true, BaseMessage.STATUS_SENT, false);
                     else
                         throw new IllegalArgumentException("Unknown chat type!");
-                    MessageList.addSentMessage(context, chatMessage);
+//                    MessageList.addSentMessage(context, chatMessage);
+//                    messageAdapter.setMessages(currentChat.getMessages());
+                    messageAdapter.curMessages.add(0, chatMessage);
                     messageAdapter.notifyItemInserted(0);
                     messageRecycler.scrollToPosition(0);
                     //messageAdapter.notifyDataSetChanged();
