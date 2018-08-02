@@ -52,7 +52,7 @@ public class MessageList {
 //        }
     }
 
-    public static BaseMessage addMessage(Context context, Date date, String body, String phoneNumber, boolean isSent) {
+    public static BaseMessage addMessage(Context context, Date date, String body, String phoneNumber, boolean isSent, boolean sortChatList) {
         BaseMessage msg = null;
         String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_phone_gateway", null);
         if (PhoneNumberUtils.compare(phoneNumber, gatewayNumber)) {
@@ -97,7 +97,8 @@ public class MessageList {
             if (user != null && user.getMessages().size() == 0)
                 chatList.ChatList.remove(user);
         }
-        Collections.sort(chatList.ChatList);
+        if (sortChatList)
+            Collections.sort(chatList.ChatList);
 //        MessageList.sortChatMessages(msg.getChat());
         return msg;
     }

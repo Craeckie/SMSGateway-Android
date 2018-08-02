@@ -21,6 +21,7 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
 //    private int index;
     private long ID;
     private boolean isEdit;
+    private Buttons buttons;
 
 
     public BaseMessage(long ID, Date createdAt, String message, String serviceID, boolean isSent, int status, boolean isEdit) {
@@ -72,7 +73,15 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
     }
     public abstract BaseChat getChat();
 
-//    public int getIndex() {
+    public Buttons getButtons() {
+        return buttons;
+    }
+
+    public void setButtons(Buttons buttons) {
+        this.buttons = buttons;
+    }
+
+    //    public int getIndex() {
 //        return index;
 //    }
 //

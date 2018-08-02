@@ -70,7 +70,15 @@
                     android:background="@android:color/transparent"
                     android:hint="Enter message"
                     android:inputType="textMultiLine"
-                    android:maxLines="6" />
+                    android:maxLines="6"
+                    app:layout_constraintRight_toLeftOf="@+id/button_buttons" />
+
+                <Button
+                    android:id="@+id/button_buttons"
+                    android:layout_width="64dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0"
+                    android:text="BTNs" />
 
                 <Button
                     android:id="@+id/button_chatbox_send"
@@ -83,7 +91,29 @@
                     android:gravity="center"
                     android:text="SEND"
                     android:textSize="14dp" />
+
             </LinearLayout>
+
+            <ScrollView
+                android:id="@+id/scroll_buttons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/layout_buttons"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="0dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:padding="0dp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/layout_chatbox">
+
+                </LinearLayout>
+            </ScrollView>
 
         </LinearLayout>
 

@@ -3,11 +3,16 @@ package de.sanemind.smsgateway;
 import android.content.Context;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.sanemind.smsgateway.model.BaseMessage;
+import de.sanemind.smsgateway.model.Buttons;
 import de.sanemind.smsgateway.model.ChatList;
 import de.sanemind.smsgateway.model.GroupMessage;
 import de.sanemind.smsgateway.model.UserMessage;
@@ -36,6 +41,7 @@ public class GatewayUtils {
 //            String channel = null;
             String phone = null;
             String messageBody = "";
+            Buttons buttons = null;
             boolean isEdit = false;
             isSent = true;
             int ID = -1;
@@ -93,6 +99,24 @@ public class GatewayUtils {
                 } else if (line.equals("Status: Processed")) {
                     // Ignore the messages just indicating that this message was about to be sent to TG
                     return new UserMessage(Long.MIN_VALUE, new Date(0), "", "", null, false, false);
+
+                } else if (line.startsWith("Buttons: ")) {
+                    String buttonsStr = line.substring("Buttons: ".length());
+                    buttons = new Buttons();
+                    try {
+                        JSONArray arr = new JSONArray(buttonsStr);
+                        for (int j = 0; j < arr.length(); j++) {
+                            JSONArray data_row = arr.getJSONArray(j);
+                            ArrayList<String> items = new ArrayList<>();
+                            for (int k = 0; k < data_row.length(); k++) {
+                                items.add(data_row.getString(k));
+                            }
+                            buttons.addRow(items);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+//                    Log.v("GU", buttons.toString());
 
                 } else if (idPattern.matcher(line).matches()) { // For performance the last check
                     try {
@@ -169,6 +193,9 @@ public class GatewayUtils {
                     } else {
                         Toast.makeText(context,"Invalid message:\n" + body, Toast.LENGTH_LONG);
                     }
+                }
+                if (message != null && buttons != null) {
+                    message.setButtons(buttons);
                 }
             }
         }

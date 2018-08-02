@@ -101,18 +101,18 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
             }
             String address = messages[0].getOriginatingAddress();
             cal.setTimeInMillis(messages[0].getTimestampMillis());
-            final BaseMessage receivedMessage = MessageList.addMessage(context, cal.getTime(), sb.toString(), address, false);
+            final BaseMessage receivedMessage = MessageList.addMessage(context, cal.getTime(), sb.toString(), address, false, true);
             NOTIFICATION_CHAT = receivedMessage.getChat();
-            MessageListActivity messageList = MessageListActivity.instance();
-            if (messageList != null && receivedMessage != null) {
-                messageList.messageReceived(receivedMessage);
+            MessageListActivity messageListActivity = MessageListActivity.instance();
+            if (messageListActivity != null && receivedMessage != null) {
+                messageListActivity.messageReceived(receivedMessage);
             }
             final ChatListFragment chatListFragment = ChatListFragment.getInstance();
             if (chatListFragment != null) {
                 chatListFragment.getChatListRecycler().updateAdapter();
                 if (receivedMessage != null && !receivedMessage.isSent()) {
-                    if (messageList != null && messageList.currentChat.equals(receivedMessage.getChat())
-                            && messageList.getWindow().isActive())
+                    if (messageListActivity != null && messageListActivity.currentChat.equals(receivedMessage.getChat())
+                            && messageListActivity.getWindow().isActive())
                         return;
                     new Thread(new Runnable() {
                         @Override
