@@ -1,4 +1,4 @@
-package de.sanemind.smsgateway;
+package de.sanemind.smsgateway.Chat;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import de.sanemind.smsgateway.R;
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.ChatList;
 

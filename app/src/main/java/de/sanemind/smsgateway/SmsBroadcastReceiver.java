@@ -16,9 +16,14 @@ import android.telephony.SmsMessage;
 import android.widget.Toast;
 
 import java.util.Calendar;
+import java.util.Map;
 
+import de.sanemind.smsgateway.Chat.ChatListFragment;
+import de.sanemind.smsgateway.Message.MessageList;
+import de.sanemind.smsgateway.Message.MessageListActivity;
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
+import de.sanemind.smsgateway.model.ChatList;
 import de.sanemind.smsgateway.model.GroupMessage;
 import de.sanemind.smsgateway.model.UserChat;
 
@@ -26,8 +31,8 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
     @SuppressWarnings("SpellCheckingInspection")
     protected static final String SMS_BUNDLE = "pdus";
     private static final String SMS_RECEIVED = "android.provider.Telephony.SMS_RECEIVED";
-    protected static final int SMS_SENT = 42;
-    protected static final int SMS_DELIVERED = 43;
+    public static final int SMS_SENT = 42;
+    public static final int SMS_DELIVERED = 43;
 
     public static final int NOTIFICATION_ID = 42;
     public static BaseChat NOTIFICATION_CHAT;
@@ -107,17 +112,24 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
             if (messageListActivity != null && receivedMessage != null) {
                 messageListActivity.messageReceived(receivedMessage);
             }
-            final ChatListFragment chatListFragment = ChatListFragment.getInstance();
-            if (chatListFragment != null) {
-                chatListFragment.getChatListRecycler().updateAdapter();
-                if (receivedMessage != null && !receivedMessage.isSent()) {
-                    if (messageListActivity != null && messageListActivity.currentChat.equals(receivedMessage.getChat())
+            Map<ChatList, ChatListFragment> chatListFragments = ChatListFragment.getInstance();
+            if (chatListFragments != null) {
+                ChatListFragment currentFragment = null;
+                for (ChatListFragment fragment : chatListFragments.values()) {
+                    fragment.getChatListRecycler().updateAdapter();
+                    ChatList fragmentChatList = fragment.getChatList();
+                    if (fragmentChatList.equals(receivedMessage.getChatList(context)))
+                        currentFragment = fragment;
+                }
+                if (currentFragment != null && receivedMessage != null && !receivedMessage.isSent()) {
+                    if (messageListActivity != null && messageListActivity.getCurrentChat().equals(receivedMessage.getChat())
                             && messageListActivity.getWindow().isActive())
                         return;
+                    final ChatListFragment finalCurrentFragment = currentFragment;
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            openMessageNotification(context, receivedMessage, chatListFragment);
+                            openMessageNotification(context, receivedMessage, finalCurrentFragment);
                         }
                     }).start();
                 }

@@ -10,6 +10,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
+import de.sanemind.smsgateway.Message.MessageList;
+
 public abstract class PermissionRequestActivity extends AppCompatActivity {
 
     public void requestPermissions() {

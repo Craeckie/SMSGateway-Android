@@ -1,4 +1,4 @@
-package de.sanemind.smsgateway;
+package de.sanemind.smsgateway.Message;
 
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
@@ -11,14 +11,14 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +35,12 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 
+import de.sanemind.smsgateway.ButtonAdapter;
+import de.sanemind.smsgateway.Chat.ChatListFragment;
+import de.sanemind.smsgateway.Messengers;
+import de.sanemind.smsgateway.PermissionRequestActivity;
+import de.sanemind.smsgateway.R;
+import de.sanemind.smsgateway.SmsBroadcastReceiver;
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
 import de.sanemind.smsgateway.model.Buttons;
@@ -52,19 +58,21 @@ public class MessageListActivity extends PermissionRequestActivity {
     private MessageListAdapter messageAdapter;
     private Button mSendButton;
     private TextView mChatBox;
-    LinearLayout layoutButtons;
-    ScrollView scrollButtons;
-    Button buttonButtons;
+//    private LinearLayout layoutButtons;
+//    private ScrollView scrollButtons;
+    private RecyclerView buttonRecycler;
+    private ButtonAdapter buttonAdapter;
+    private Button buttonButtons;
 
-    ChatList chatList;
-    BaseChat currentChat = null;
+    private ChatList chatList;
+    private BaseChat currentChat = null;
 
-    String standardService = null;
+    private String standardService = null;
 
     private SmsManager smsManager = SmsManager.getDefault();
 
-    Timer messageUpdateTimer;
-    Runnable messageUpdateRunnable;
+    private Timer messageUpdateTimer;
+    private Runnable messageUpdateRunnable;
 
 //    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
 //            = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -122,28 +130,12 @@ public class MessageListActivity extends PermissionRequestActivity {
     void setButtons(Buttons btns) {
 
         Context context = getApplicationContext();
-        layoutButtons.removeAllViews();
+
         if (btns != null) {
-            for (Buttons.Row row : btns) {
-                LinearLayout curLayout = layoutButtons;
-                if (row.size() > 1) {
-                    curLayout = new LinearLayout(context);
-                    curLayout.setOrientation(LinearLayout.HORIZONTAL);
-                    layoutButtons.addView(curLayout);
-                }
-                for (final String item : row) {
-                    Button btn = new Button(context);
-                    btn.setText(item);
-                    btn.setTextSize(12);
-                    btn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            sendMessage(item);
-                        }
-                    });
-                    curLayout.addView(btn);
-                }
-            }
+            buttonAdapter = new ButtonAdapter(btns, this);
+            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+            buttonRecycler.setLayoutManager(layoutManager);
+            buttonRecycler.setAdapter(buttonAdapter);
         }
     }
 
@@ -161,9 +153,12 @@ public class MessageListActivity extends PermissionRequestActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         TextView titleText = (TextView) findViewById(R.id.toolbar_title);
-        Button toggleButtons = findViewById(R.id.button_buttons);
-        layoutButtons = findViewById(R.id.layout_buttons);
-        scrollButtons = findViewById(R.id.scroll_buttons);
+        final Button toggleButtons = findViewById(R.id.button_buttons);
+        buttonRecycler = findViewById(R.id.recyclerview_button_list);
+//        layoutButtons = findViewById(R.id.layout_buttons);
+//        scrollButtons = findViewById(R.id.scroll_buttons);
+
+
         buttonButtons = findViewById(R.id.button_buttons);
 
         if (!MessageList.isRefreshedFromSMSInbox()) {
@@ -205,9 +200,21 @@ public class MessageListActivity extends PermissionRequestActivity {
 
         BaseMessage msg = currentChat.getMessages().first();
         Buttons btns = msg.getButtons();
+//        btns = new Buttons();
+//        ArrayList<String> row = new ArrayList<>();
+//        row.add("sdf"); row.add("sdfSDF");
+//        btns.addRow(row);
+//        row = new ArrayList<>();
+//        row.add("DFGFDG");
+//        btns.addRow(row);
         if (btns != null) {
             buttonButtons.setVisibility(View.VISIBLE);
             setButtons(btns);
+            View view = this.getCurrentFocus();
+            if (view != null) {
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
         } else {
             buttonButtons.setVisibility(View.GONE);
         }
@@ -238,18 +245,25 @@ public class MessageListActivity extends PermissionRequestActivity {
         toggleButtons.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int visibility = scrollButtons.getVisibility();
+                int visibility = buttonRecycler.getVisibility();
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 if (visibility != View.VISIBLE) {
-                    scrollButtons.setVisibility(View.VISIBLE);
+                    buttonRecycler.setVisibility(View.VISIBLE);
+                    imm.hideSoftInputFromWindow(mChatBox.getWindowToken(), 0);
+                    toggleButtons.setText("KEYB");
                 } else {
-                    scrollButtons.setVisibility(View.GONE);
+                    buttonRecycler.setVisibility(View.GONE);
+                    imm.toggleSoftInputFromWindow(
+                            mChatBox.getApplicationWindowToken(),
+                            InputMethodManager.SHOW_FORCED, 0);
+                    toggleButtons.setText("BTNS");
                 }
             }
         });
         mChatBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                scrollButtons.setVisibility(View.GONE);
+                buttonRecycler.setVisibility(View.GONE);
             }
         });
 
@@ -278,7 +292,7 @@ public class MessageListActivity extends PermissionRequestActivity {
         }, 1000, 10000);
     }
 
-    void sendMessage(String text) {
+    public void sendMessage(String text) {
         if (currentChat != null) {
             Context context = getApplicationContext();
             String serviceID = "TG";
@@ -404,5 +418,9 @@ public class MessageListActivity extends PermissionRequestActivity {
 
     public MessageListAdapter getMessageAdapter() {
         return messageAdapter;
+    }
+
+    public BaseChat getCurrentChat() {
+        return currentChat;
     }
 }

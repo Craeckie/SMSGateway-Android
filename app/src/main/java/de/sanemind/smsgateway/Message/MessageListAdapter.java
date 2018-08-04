@@ -1,4 +1,4 @@
-package de.sanemind.smsgateway;
+package de.sanemind.smsgateway.Message;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 
+import de.sanemind.smsgateway.R;
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
 import de.sanemind.smsgateway.model.GroupChat;

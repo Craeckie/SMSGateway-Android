@@ -1,4 +1,4 @@
-package de.sanemind.smsgateway;
+package de.sanemind.smsgateway.Message;
 
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
@@ -6,6 +6,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import de.sanemind.smsgateway.R;
+import de.sanemind.smsgateway.Utils;
 import de.sanemind.smsgateway.model.BaseMessage;
 import de.sanemind.smsgateway.model.GroupChat;
 import de.sanemind.smsgateway.model.GroupMessage;

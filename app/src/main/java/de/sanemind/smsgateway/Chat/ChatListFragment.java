@@ -1,4 +1,4 @@
-package de.sanemind.smsgateway;
+package de.sanemind.smsgateway.Chat;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,9 +10,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import de.sanemind.smsgateway.Message.MessageListActivity;
+import de.sanemind.smsgateway.Messengers;
+import de.sanemind.smsgateway.R;
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.ChatList;
 import de.sanemind.smsgateway.model.GroupChat;
@@ -33,7 +38,7 @@ public class ChatListFragment extends Fragment {
     private ChatListAdapter chatListAdapter;
     private ChatList chatList;
 
-    private static ChatListFragment instance;
+    private static Map<ChatList, ChatListFragment> sectionInstances;
 
     private Timer chatListUpdateTimer;
     private Runnable chatListUpdateRunnable;
@@ -64,6 +69,9 @@ public class ChatListFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_user_list, container, false);
         Context context = getContext();
 
+        if (sectionInstances == null)
+            sectionInstances = new HashMap<>();
+
         int section = getArguments().getInt(ARG_SECTION_NUMBER);
         switch (section) {
             case 1:
@@ -79,7 +87,7 @@ public class ChatListFragment extends Fragment {
                 throw new IllegalArgumentException("ChatListFragment was opened with invalid section number: " + section);
         }
 
-        instance = this;
+        sectionInstances.put(chatList, this);
 
         chatListRecycler = (ChatListRecyclerView) rootView.findViewById(R.id.recyclerview_user_list);
         chatListAdapter = new ChatListAdapter(inflater.getContext(), chatList);
@@ -148,12 +156,18 @@ public class ChatListFragment extends Fragment {
         startActivity(getOpenChatIntent(getContext(), chat));
     }
 
-    public static ChatListFragment getInstance() {
-        return instance;
+    public static Map<ChatList, ChatListFragment> getInstance() {
+        if (sectionInstances != null)
+            return sectionInstances;
+        else
+            return null;
     }
 
     public ChatListRecyclerView getChatListRecycler() {
         return chatListRecycler;
     }
 
+    public ChatList getChatList() {
+        return chatList;
+    }
 }

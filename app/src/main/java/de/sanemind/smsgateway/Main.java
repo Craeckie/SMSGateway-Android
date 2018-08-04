@@ -24,7 +24,7 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
-import de.sanemind.smsgateway.model.ChatList;
+import de.sanemind.smsgateway.Chat.ChatListFragment;
 
 public class Main extends PermissionRequestActivity {
 
@@ -80,11 +80,12 @@ public class Main extends PermissionRequestActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Show notification", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                new SmsBroadcastReceiver().openMessageNotification(getApplicationContext(), Messengers.GatewayUser.getLastMessage(), ChatListFragment.getInstance());
+                                new SmsBroadcastReceiver().openMessageNotification(getApplicationContext(), Messengers.GatewayUser.getLastMessage(), ChatListFragment.getInstance().values().iterator().next());
                             }
                         }).show();
             }

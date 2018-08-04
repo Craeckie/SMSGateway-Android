@@ -1,4 +1,4 @@
-package de.sanemind.smsgateway;
+package de.sanemind.smsgateway.Message;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -11,6 +11,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 
+import de.sanemind.smsgateway.GatewayUtils;
+import de.sanemind.smsgateway.Messengers;
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
 import de.sanemind.smsgateway.model.ChatList;

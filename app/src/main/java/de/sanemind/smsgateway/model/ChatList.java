@@ -14,9 +14,11 @@ public class ChatList {
     public final List<BaseChat> ChatList = new ArrayList<>();
 
     private ContactsLoader contactsLoader;
+    private String identifier;
 
-    public ChatList(ContactsLoader contactsLoader) {
+    public ChatList(String identifier, ContactsLoader contactsLoader) {
         this.contactsLoader = contactsLoader;
+        this.identifier = identifier;
     }
 
     public Boolean isEmpty() {
@@ -91,5 +93,18 @@ public class ChatList {
                 iterator.remove();
         }
         Collections.sort(ChatList);
+    }
+
+    @Override
+    public int hashCode() {
+        return identifier.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ChatList)
+            return ((ChatList)obj).identifier.equals(identifier);
+        else
+            return super.equals(obj);
     }
 }

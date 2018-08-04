@@ -1,4 +1,4 @@
-package de.sanemind.smsgateway;
+package de.sanemind.smsgateway.Chat;
 
 import android.content.Context;
 import android.support.annotation.Nullable;

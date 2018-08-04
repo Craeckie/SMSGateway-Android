@@ -1,4 +1,4 @@
-package de.sanemind.smsgateway;
+package de.sanemind.smsgateway.Chat;
 
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -8,8 +8,12 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.Map;
+
+import de.sanemind.smsgateway.R;
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
+import de.sanemind.smsgateway.model.ChatList;
 import de.sanemind.smsgateway.model.GroupChat;
 import de.sanemind.smsgateway.model.GroupMessage;
 import de.sanemind.smsgateway.model.UserChat;
@@ -79,7 +83,9 @@ public class ChatHolder extends ViewHolder {
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ChatListFragment.getInstance().openChat(chat);
+                Map<ChatList, ChatListFragment> fragments = ChatListFragment.getInstance();
+                ChatListFragment fragment = fragments.get(chat.getChatList());
+                fragment.openChat(chat);
             }
         });
     }

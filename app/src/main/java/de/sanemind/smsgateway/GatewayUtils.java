@@ -23,8 +23,9 @@ public class GatewayUtils {
     private static Pattern oldFromGroupPattern = Pattern.compile("^From: (.*) \\(([0-9+]+)\\)@(.*)$");
 
     private static Pattern idPattern = Pattern.compile("^ID: ([0-9]+)$");
+    private static Pattern datePattern = Pattern.compile("^Date: ([0-9]+)$");
 
-    public static BaseMessage tryParseGatewayMessage(Context context, String body, Date date, boolean isSent) {
+    public static BaseMessage tryParseGatewayMessage(Context context, String body, Date receivedDate, boolean isSent) {
         BaseMessage message = null;
         String[] lines = body.split("\n");
         if (lines.length > 2) {
@@ -43,6 +44,7 @@ public class GatewayUtils {
             String messageBody = "";
             Buttons buttons = null;
             boolean isEdit = false;
+            Date date = receivedDate;
             isSent = true;
             int ID = -1;
             boolean messageStarted = false;
@@ -100,6 +102,10 @@ public class GatewayUtils {
                     // Ignore the messages just indicating that this message was about to be sent to TG
                     return new UserMessage(Long.MIN_VALUE, new Date(0), "", "", null, false, false);
 
+                } else if (line.startsWith("Date: ")) {
+                    Matcher dateMatch = datePattern.matcher(line);
+                    if (dateMatch.matches())
+                        date = new java.util.Date(Long.parseLong(dateMatch.group(1)) * 1000L);
                 } else if (line.startsWith("Buttons: ")) {
                     String buttonsStr = line.substring("Buttons: ".length());
                     buttons = new Buttons();
@@ -131,7 +137,7 @@ public class GatewayUtils {
 //                }
             }
 
-            if (from != null || to != null) {
+            if (!messageBody.isEmpty() && !messageBody.equals("\n") && (from != null || to != null)) {
                 String user = isSent ? to : from;
                 if (type != null && !type.equals("user")) {
                     if (type.equals("channel") && user != null) { // Someone sent to a channel

@@ -10,9 +10,9 @@ public class Messengers {
 
     private static ContactsLoader contactsLoader = new ContactsLoader();
 
-    private static ChatList TG = new ChatList(contactsLoader);
-    private static ChatList FB = new ChatList(contactsLoader);
-    private static ChatList SMS = new ChatList(contactsLoader);
+    private static ChatList TG = new ChatList("TG", contactsLoader);
+    private static ChatList FB = new ChatList("FB", contactsLoader);
+    private static ChatList SMS = new ChatList("SMS", contactsLoader);
 
     public static final UserChat GatewayUser = new UserChat(SMS,"Gateway", "Gateway");
 
