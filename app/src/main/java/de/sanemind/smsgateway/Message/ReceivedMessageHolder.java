@@ -11,6 +11,7 @@ import de.sanemind.smsgateway.Utils;
 import de.sanemind.smsgateway.model.BaseMessage;
 import de.sanemind.smsgateway.model.GroupChat;
 import de.sanemind.smsgateway.model.GroupMessage;
+import de.sanemind.smsgateway.model.MessageStatus;
 import de.sanemind.smsgateway.model.UserChat;
 
 class ReceivedMessageHolder extends RecyclerView.ViewHolder {
@@ -51,8 +52,10 @@ class ReceivedMessageHolder extends RecyclerView.ViewHolder {
         // Format the stored timestamp into a readable String using method.
         long time = message.getCreatedAt().getTime();
         CharSequence timeStr = Utils.formatRelativeTime(itemView.getContext(), time);
-        if (message.isEdit())
+        if (message.getStatus() == MessageStatus.EDITED)
             timeStr = "edited  " + timeStr;
+        else if (message.getStatus() == MessageStatus.DELETED)
+            timeStr = "deleted  " + timeStr;
         timeText.setText(timeStr);
 //        String name = message.getChat().getName();
         if (nameText != null && message instanceof GroupMessage) {

@@ -70,7 +70,7 @@ public abstract class BaseChat implements Comparable<BaseChat> {
 
     public BaseMessage getMessageFromID(long ID) {
 
-        SortedSet<BaseMessage> tailSet = messages.tailSet(new UserMessage(ID, new Date(0), null, null, null, false, false));
+        SortedSet<BaseMessage> tailSet = messages.tailSet(new UserMessage(ID, new Date(0), null, null, null, false, null));
         if (tailSet.size() > 0) {
             BaseMessage msg = tailSet.first();
             if (msg.getID() == ID)
@@ -86,7 +86,7 @@ public abstract class BaseChat implements Comparable<BaseChat> {
 //        if (followingMessages.size() > 0)
 //            followingMessages.first()
         BaseMessage refMessage = getMessageFromID(message.getID());
-        if (message.isEdit() || refMessage == null || !refMessage.isEdit()) {
+        if (message.getStatus() != MessageStatus.EDITED || refMessage == null || refMessage.getStatus() != MessageStatus.EDITED) {
             if (refMessage != null)
                 messages.remove(refMessage);
             messages.add(message);

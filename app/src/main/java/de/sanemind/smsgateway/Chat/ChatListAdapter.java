@@ -45,7 +45,7 @@ public class ChatListAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         BaseChat user = chatList.ChatList.get(position);
 
-        ((ChatHolder) holder).bind(user);
+        ((ChatHolder) holder).bind(user, chatList);
     }
 
     public ChatList getChatList() {

@@ -15,6 +15,7 @@ import de.sanemind.smsgateway.model.BaseMessage;
 import de.sanemind.smsgateway.model.Buttons;
 import de.sanemind.smsgateway.model.ChatList;
 import de.sanemind.smsgateway.model.GroupMessage;
+import de.sanemind.smsgateway.model.MessageStatus;
 import de.sanemind.smsgateway.model.UserMessage;
 
 public class GatewayUtils {
@@ -42,8 +43,9 @@ public class GatewayUtils {
 //            String channel = null;
             String phone = null;
             String messageBody = "";
+            MessageStatus status = MessageStatus.FORWARDED;
             Buttons buttons = null;
-            boolean isEdit = false;
+//            boolean isEdit = false;
             Date date = receivedDate;
             isSent = true;
             int ID = -1;
@@ -96,12 +98,19 @@ public class GatewayUtils {
                 } else if (line.startsWith("Phone: ")) {
                     phone = line.substring("Phone: ".length());
                 } else if (line.startsWith("Edit: ")) {
-                    if (line.substring("Edit: ".length()).equalsIgnoreCase("true"))
-                        isEdit = true;
-                } else if (line.equals("Status: Processed")) {
-                    // Ignore the messages just indicating that this message was about to be sent to TG
-                    return new UserMessage(Long.MIN_VALUE, new Date(0), "", "", null, false, false);
-
+                    if (line.substring("Edit: ".length()).equalsIgnoreCase("true")) {
+                        status = MessageStatus.EDITED;
+                    }
+                } else if (line.startsWith("Status: ")) {
+                    String statusString = line.substring("Status: ".length());
+                    if (statusString.equalsIgnoreCase("processed")) {
+                        // Ignore the messages just indicating that this message was about to be sent to TG
+                        return new UserMessage(Long.MIN_VALUE, new Date(0), "", "", null, false, MessageStatus.FORWARDED);
+                    } else if (statusString.equalsIgnoreCase("deleted")) {
+                        status = MessageStatus.DELETED;
+                    } else if (statusString.equalsIgnoreCase("edited")) {
+                        status = MessageStatus.EDITED;
+                    }
                 } else if (line.startsWith("Date: ")) {
                     Matcher dateMatch = datePattern.matcher(line);
                     if (dateMatch.matches())
@@ -149,7 +158,7 @@ public class GatewayUtils {
                                 chatList.get_or_create_group(context, user, user, true),
                                 null,
                                 isSent,
-                                isEdit);
+                                status);
                     } else if (type.equals("group")) {
                         if (isSent && to != null) { // I wrote to a group
                             message = new GroupMessage(
@@ -160,7 +169,7 @@ public class GatewayUtils {
                                     chatList.get_or_create_group(context, to, to, false),
                                     chatList.get_meUser(context), // TODO: correct?
                                     isSent,
-                                    isEdit);
+                                    status);
                         } else if (!isSent && to != null && from != null) { // Somebody sent to a group
                             message = new GroupMessage(
                                     ID,
@@ -170,7 +179,7 @@ public class GatewayUtils {
                                     chatList.get_or_create_group(context, to, to, false),
                                     chatList.get_or_create_user(context, from, from, phone),
                                     isSent,
-                                    isEdit);
+                                    status);
                         } else {
                             Toast.makeText(context, "Invalid group message:\n" + body, Toast.LENGTH_LONG);
                         }
@@ -186,7 +195,7 @@ public class GatewayUtils {
                                 identifier,
                                 chatList.get_or_create_user(context, to, to, phone),
                                 isSent,
-                                isEdit);
+                                status);
                     } else if (!isSent && from != null){ // Somebody sent me a message
                         message = new UserMessage(
                                 ID,
@@ -195,7 +204,7 @@ public class GatewayUtils {
                                 identifier,
                                 chatList.get_or_create_user(context, from, from, phone),
                                 isSent,
-                                isEdit);
+                                status);
                     } else {
                         Toast.makeText(context,"Invalid message:\n" + body, Toast.LENGTH_LONG);
                     }

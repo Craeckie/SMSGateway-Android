@@ -8,6 +8,7 @@ import android.widget.TextView;
 import de.sanemind.smsgateway.R;
 import de.sanemind.smsgateway.Utils;
 import de.sanemind.smsgateway.model.BaseMessage;
+import de.sanemind.smsgateway.model.MessageStatus;
 
 public class SentMessageHolder extends ViewHolder {
     TextView messageText, timeText;
@@ -28,19 +29,22 @@ public class SentMessageHolder extends ViewHolder {
         // Format the stored timestamp into a readable String
         long time = message.getCreatedAt().getTime();
         CharSequence timeStr = Utils.formatRelativeTime(itemView.getContext(), time);
-        if (message.isEdit())
+        if (message.getStatus() == MessageStatus.EDITED)
             timeStr = "edited  " + timeStr;
         timeText.setText(timeStr);
 
         switch (message.getStatus()) {
-            case BaseMessage.STATUS_SENT:
+            case SENT:
                 receivedImage.setImageResource(R.drawable.ic_access_time_black_24dp);
                 break;
-            case BaseMessage.STATUS_RECEIVED:
+            case RECEIVED:
                 receivedImage.setImageResource(R.drawable.ic_check_black_24dp);
                 break;
-            case BaseMessage.STATUS_FORWARDED:
+            case FORWARDED:
                 receivedImage.setImageResource(R.drawable.ic_double_check_black_24dp);
+                break;
+            case DELETED:
+                receivedImage.setImageResource(R.drawable.circle);
                 break;
         }
     }

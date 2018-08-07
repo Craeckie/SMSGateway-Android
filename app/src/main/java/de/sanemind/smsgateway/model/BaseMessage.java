@@ -17,21 +17,23 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
     private String message;
     private String serviceID;
     private boolean isSent;
-    private int status;
+//    private int status;
 //    private int index;
     private long ID;
-    private boolean isEdit;
+    //private boolean isEdit;
     private Buttons buttons;
+    @NonNull
+    private MessageStatus status;
 
 
-    public BaseMessage(long ID, Date createdAt, String message, String serviceID, boolean isSent, int status, boolean isEdit) {
+    public BaseMessage(long ID, Date createdAt, String message, String serviceID, boolean isSent, MessageStatus status) {
         this.ID = ID;
         this.createdAt = createdAt;
         this.message = message;
         this.serviceID = serviceID;
         this.isSent = isSent;
         this.status = status;
-        this.isEdit = isEdit;
+//        this.isEdit = isEdit;
     }
 
     public Date getCreatedAt() {
@@ -56,17 +58,17 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
         return isSent;
     }
 
-    public int getStatus() {
+    public MessageStatus getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(MessageStatus status) {
         this.status = status;
     }
 
-    public boolean isEdit() {
-        return isEdit;
-    }
+//    public boolean isEdit() {
+//        return isEdit;
+//    }
 
     public long getID() {
         return ID;
@@ -80,14 +82,6 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
     public void setButtons(Buttons buttons) {
         this.buttons = buttons;
     }
-
-    //    public int getIndex() {
-//        return index;
-//    }
-//
-//    public void setIndex(int index) {
-//        this.index = index;
-//    }
 
     @Override
     public int compareTo(@NonNull BaseMessage o) {

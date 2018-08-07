@@ -16,8 +16,10 @@ public abstract class PermissionRequestActivity extends AppCompatActivity {
 
     public void requestPermissions() {
         String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("edit_text_preference_phone_gateway", null);
-        if (gatewayNumber != null && !MessageList.isRefreshedFromSMSInbox() && getPermission(Manifest.permission.READ_SMS, getString(R.string.request_read_sms_permission), READ_SMS_PERMISSIONS_REQUEST)
-                && getPermission(Manifest.permission.READ_CONTACTS, getString(R.string.request_read_contact_permission),  READ_CONTACTS_PERMISSIONS_REQUEST)) {
+        if (gatewayNumber != null && !MessageList.isRefreshedFromSMSInbox() &&
+                getPermission(Manifest.permission.READ_SMS, getString(R.string.request_read_sms_permission), READ_SMS_PERMISSIONS_REQUEST) &&
+                getPermission(Manifest.permission.READ_CONTACTS, getString(R.string.request_read_contact_permission),  READ_CONTACTS_PERMISSIONS_REQUEST) &&
+                getPermission(Manifest.permission.READ_PHONE_STATE, getString(R.string.request_read_phone_state_permission),  READ_PHONE_STATE_PERMISSIONS_REQUEST)) {
             MessageList.refreshFromSMSInbox(getApplicationContext());
         }
     }
@@ -27,8 +29,9 @@ public abstract class PermissionRequestActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 42) {
             String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("edit_text_preference_phone_gateway", null);
-            if (gatewayNumber != null && !MessageList.isRefreshedFromSMSInbox() && getPermission(Manifest.permission.READ_SMS, getString(R.string.request_read_sms_permission), READ_SMS_PERMISSIONS_REQUEST)
-                    && getPermission(Manifest.permission.READ_CONTACTS, getString(R.string.request_read_contact_permission),  READ_CONTACTS_PERMISSIONS_REQUEST)) {
+            if (gatewayNumber != null && !MessageList.isRefreshedFromSMSInbox() && getPermission(Manifest.permission.READ_SMS, getString(R.string.request_read_sms_permission), READ_SMS_PERMISSIONS_REQUEST) &&
+                    getPermission(Manifest.permission.READ_CONTACTS, getString(R.string.request_read_contact_permission),  READ_CONTACTS_PERMISSIONS_REQUEST) &&
+                    getPermission(Manifest.permission.READ_PHONE_STATE, getString(R.string.request_read_phone_state_permission),  READ_PHONE_STATE_PERMISSIONS_REQUEST)) {
                 MessageList.refreshFromSMSInbox(getApplicationContext());
             }
         }
@@ -40,6 +43,7 @@ public abstract class PermissionRequestActivity extends AppCompatActivity {
 
     private static final int READ_SMS_PERMISSIONS_REQUEST = 1;
     private static final int READ_CONTACTS_PERMISSIONS_REQUEST = 2;
+    private static final int READ_PHONE_STATE_PERMISSIONS_REQUEST = 2;
 
 
     protected boolean getPermission(String permission, String message, int request_id) {
@@ -81,6 +85,16 @@ public abstract class PermissionRequestActivity extends AppCompatActivity {
                 }
             } else {
                 Toast.makeText(getApplicationContext(), "Read contacts permission denied :(", Toast.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == READ_PHONE_STATE_PERMISSIONS_REQUEST) {
+            if (grantResults.length == 1 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(getApplicationContext(), "Read phone state permission granted", Toast.LENGTH_SHORT).show();
+                if (getPermission(Manifest.permission.READ_PHONE_STATE, getString(R.string.request_read_phone_state_permission), READ_PHONE_STATE_PERMISSIONS_REQUEST)) {
+                    MessageList.refreshFromSMSInbox(getApplicationContext());
+                }
+            } else {
+                Toast.makeText(getApplicationContext(), "Read phone state permission denied :(", Toast.LENGTH_SHORT).show();
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);

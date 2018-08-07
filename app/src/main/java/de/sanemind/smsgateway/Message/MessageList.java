@@ -17,6 +17,7 @@ import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
 import de.sanemind.smsgateway.model.ChatList;
 import de.sanemind.smsgateway.model.GroupMessage;
+import de.sanemind.smsgateway.model.MessageStatus;
 import de.sanemind.smsgateway.model.UserChat;
 import de.sanemind.smsgateway.model.UserMessage;
 
@@ -88,7 +89,7 @@ public class MessageList {
 ////            }
         }
         else if (msg == null) {
-            msg = new UserMessage(-1, date, body, "SMS", Messengers.getSMS(context).get_or_create_user(context, null, null, phoneNumber), isSent, false);
+            msg = new UserMessage(-1, date, body, "SMS", Messengers.getSMS(context).get_or_create_user(context, null, null, phoneNumber), isSent, MessageStatus.SENT);
         }
         MessageList.addMessage(msg);
         ChatList chatList = msg.getChatList(context);
@@ -179,7 +180,7 @@ public class MessageList {
                 msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent);
             }
             if (msg == null) {
-                msg = new UserMessage(-1, date, body, "SMS", Messengers.getSMS(context).get_or_create_user(context, address, address, address), isSent, false);
+                msg = new UserMessage(-1, date, body, "SMS", Messengers.getSMS(context).get_or_create_user(context, address, address, address), isSent, MessageStatus.SENT);
             }
 //            } else if (msg.isEdit()) {
 //                for (BaseMessage cur_msg : msg.getChat().getMessages()) {

@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         applicationId "de.sanemind.smsgateway"
         minSdkVersion 15
         targetSdkVersion 28
         versionCode 21
-        versionName "1.2.2"
+        versionName "1.2.3"
         testInstrumentationRunner "android.support.Main.runner.AndroidJUnitRunner"
     }
     buildTypes {

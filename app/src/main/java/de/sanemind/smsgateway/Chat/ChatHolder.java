@@ -22,6 +22,7 @@ public class ChatHolder extends ViewHolder {
     TextView usernameText, lastMessageText, timeText;
     ImageView profileImage;
     public BaseChat chat;
+    private ChatList chatList;
 
     ChatHolder(View itemView) {
         super(itemView);
@@ -34,9 +35,10 @@ public class ChatHolder extends ViewHolder {
 
     }
 
-    void bind(BaseChat _chat) {
+    void bind(final BaseChat chat, final ChatList chatList) {
 
-        this.chat = _chat;
+        this.chat = chat;
+        this.chatList = chatList;
 
         profileImage.setImageURI(null);
 
@@ -84,7 +86,7 @@ public class ChatHolder extends ViewHolder {
             @Override
             public void onClick(View v) {
                 Map<ChatList, ChatListFragment> fragments = ChatListFragment.getInstance();
-                ChatListFragment fragment = fragments.get(chat.getChatList());
+                ChatListFragment fragment = fragments.get(chatList);
                 fragment.openChat(chat);
             }
         });

@@ -12,6 +12,7 @@
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="request_read_sms_permission">Please allow access to SMS!</string>
     <string name="request_read_contact_permission">Please allow access to contacts!"</string>
+    <string name="request_read_phone_state_permission">Please allow access to your phone state.\nThis is necessary for some SMS features. See https://stackoverflow.com/a/27300529.</string>
     <string-array name="CountryCodes" >
         <item>93,AF</item>
         <item>355,AL</item>
