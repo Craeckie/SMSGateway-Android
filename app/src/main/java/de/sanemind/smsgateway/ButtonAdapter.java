@@ -57,6 +57,10 @@ public class ButtonAdapter extends RecyclerView.Adapter {
         ((ButtonHolder) holder).bind(row);
     }
 
+    public void setButtons(Buttons buttons) {
+        this.buttons = buttons;
+    }
+
     @Override
     public int getItemCount() {
         return buttons.size();

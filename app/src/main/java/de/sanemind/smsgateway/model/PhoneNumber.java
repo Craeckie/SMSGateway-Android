@@ -16,8 +16,11 @@ public class PhoneNumber implements Comparable<PhoneNumber> {
         this.priority = priority;
     }
 
-    public String getNumber() {
-        return "+" + number;
+    public String getNumber(boolean prependPlus) {
+        if (prependPlus)
+            return "+" + number;
+        else
+            return number;
     }
 
     public void setNumber(Context context, String number) {
@@ -34,7 +37,7 @@ public class PhoneNumber implements Comparable<PhoneNumber> {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof PhoneNumber)
-            return PhoneNumberUtils.compare(number, ((PhoneNumber)obj).getNumber());
+            return PhoneNumberUtils.compare(number, ((PhoneNumber)obj).getNumber(false));
         else if (obj instanceof String)
             return PhoneNumberUtils.compare(number, ((String)obj));
         else

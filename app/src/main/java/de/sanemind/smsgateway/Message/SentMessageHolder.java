@@ -20,6 +20,8 @@ public class SentMessageHolder extends ViewHolder {
         messageText = (TextView) itemView.findViewById(R.id.text_message_body);
         timeText = (TextView) itemView.findViewById(R.id.text_message_time);
         receivedImage = (ImageView) itemView.findViewById(R.id.image_message_received);
+        if (receivedImage != null)
+            receivedImage.setImageURI(null);
     }
 
     void bind(BaseMessage message) {
@@ -44,7 +46,7 @@ public class SentMessageHolder extends ViewHolder {
                 receivedImage.setImageResource(R.drawable.ic_double_check_black_24dp);
                 break;
             case DELETED:
-                receivedImage.setImageResource(R.drawable.circle);
+                receivedImage.setImageResource(android.R.drawable.ic_delete);
                 break;
         }
     }

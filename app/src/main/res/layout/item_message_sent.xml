@@ -18,20 +18,22 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/text_message_body"
-        android:text="hello\nsdf"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:maxWidth="240dp"
-        android:paddingTop="6dp"
-        android:paddingLeft="6dp"
-        android:paddingRight="6dp"
-        android:textSize="@dimen/message_text_size"
-        android:textColor="#ffffff"
-        android:linksClickable="true"
-        android:autoLink="all"
-        android:textIsSelectable="true" />
+        <TextView
+            android:id="@+id/text_message_body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autoLink="all"
+            android:linksClickable="true"
+            android:maxWidth="240dp"
+            android:paddingLeft="6dp"
+            android:paddingRight="6dp"
+            android:paddingTop="6dp"
+            android:text="hi man, how are you?"
+            android:textColor="#ffffff"
+            android:textIsSelectable="true"
+            android:textSize="@dimen/message_text_size"
+            tools:layout_editor_absoluteX="2dp"
+            tools:layout_editor_absoluteY="2dp" />
         <TextView
             android:id="@+id/text_message_time"
             android:text="11:40"

@@ -117,9 +117,9 @@ public class MessageListActivity extends PermissionRequestActivity {
             }
             BaseMessage msg = messages.first();
             Buttons btns = msg.getButtons();
+            setButtons(btns);
             if (btns != null) {
                 buttonButtons.setVisibility(View.VISIBLE);
-                setButtons(btns);
             } else {
                 buttonButtons.setVisibility(View.GONE);
             }
@@ -131,10 +131,11 @@ public class MessageListActivity extends PermissionRequestActivity {
         Context context = getApplicationContext();
 
         if (btns != null) {
-            buttonAdapter = new ButtonAdapter(btns, this);
-            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-            buttonRecycler.setLayoutManager(layoutManager);
-            buttonRecycler.setAdapter(buttonAdapter);
+            buttonAdapter.setButtons(btns);
+            buttonAdapter.notifyDataSetChanged();
+        } else {
+            buttonAdapter.setButtons(new Buttons());
+            buttonAdapter.notifyDataSetChanged();
         }
     }
 
@@ -199,24 +200,22 @@ public class MessageListActivity extends PermissionRequestActivity {
 
         BaseMessage msg = currentChat.getMessages().first();
         Buttons btns = msg.getButtons();
-//        btns = new Buttons();
-//        ArrayList<String> row = new ArrayList<>();
-//        row.add("sdf"); row.add("sdfSDF");
-//        btns.addRow(row);
-//        row = new ArrayList<>();
-//        row.add("DFGFDG");
-//        btns.addRow(row);
+//
         if (btns != null) {
+            buttonAdapter = new ButtonAdapter(btns, this);
             buttonButtons.setVisibility(View.VISIBLE);
-            setButtons(btns);
             View view = this.getCurrentFocus();
             if (view != null) {
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
         } else {
+            buttonAdapter = new ButtonAdapter(new Buttons(), this);
             buttonButtons.setVisibility(View.GONE);
         }
+        LinearLayoutManager buttonLayoutManager = new LinearLayoutManager(this);
+        buttonRecycler.setLayoutManager(buttonLayoutManager );
+        buttonRecycler.setAdapter(buttonAdapter);
 
         messageAdapter = new MessageListAdapter(this, currentChat);
 
@@ -259,6 +258,7 @@ public class MessageListActivity extends PermissionRequestActivity {
                 }
             }
         });
+
         mChatBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -315,7 +315,7 @@ public class MessageListActivity extends PermissionRequestActivity {
                 UserChat userChat = (UserChat)currentChat;
                 PhoneNumber phoneNumber = userChat.getMostImportantPhoneNumber();
                 if (phoneNumber != null)
-                    lines.add("Phone: " + phoneNumber.getNumber());
+                    lines.add("Phone: " + phoneNumber.getNumber(false));
             }
             else if (currentChat instanceof GroupChat) {
                 if (((GroupChat) currentChat).isChannel())
@@ -368,7 +368,7 @@ public class MessageListActivity extends PermissionRequestActivity {
 
             if (serviceID.equals("SMS")) {
                 UserChat userchat = (UserChat) currentChat;
-                gatewayNumber = userchat.getMostImportantPhoneNumber().getNumber();
+                gatewayNumber = userchat.getMostImportantPhoneNumber().getNumber(true);
             }
 
             Intent broadcastReceiverSentIntent = new Intent(context, SmsBroadcastReceiver.class);

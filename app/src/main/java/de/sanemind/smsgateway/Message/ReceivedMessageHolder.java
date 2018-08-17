@@ -16,7 +16,7 @@ import de.sanemind.smsgateway.model.UserChat;
 
 class ReceivedMessageHolder extends RecyclerView.ViewHolder {
     TextView messageText, timeText, nameText;
-    ImageView profileImage;
+    ImageView profileImage, receivedImage;
 
     ReceivedMessageHolder(View itemView) {
         super(itemView);
@@ -24,8 +24,11 @@ class ReceivedMessageHolder extends RecyclerView.ViewHolder {
         timeText = (TextView) itemView.findViewById(R.id.text_message_time);
         nameText = (TextView) itemView.findViewById(R.id.text_message_name);
         profileImage = (ImageView) itemView.findViewById(R.id.image_message_profile);
+        receivedImage = itemView.findViewById(R.id.image_message_received);
         if (profileImage != null)
             profileImage.setImageURI(null);
+        if (receivedImage != null)
+            receivedImage.setImageURI(null);
     }
 
     void bind(BaseMessage message) {
@@ -66,6 +69,22 @@ class ReceivedMessageHolder extends RecyclerView.ViewHolder {
 
                 // Insert the profile image from the URL into the ImageView.
                 //Utils.displayRoundImageFromUrl(mContext, message.getSender().getProfileUrl(), profileImage);
+            }
+        }
+        if (receivedImage != null) {
+            switch (message.getStatus()) {
+                case SENT:
+                    receivedImage.setImageResource(R.drawable.ic_access_time_black_24dp);
+                    break;
+                case RECEIVED:
+                    receivedImage.setImageResource(R.drawable.ic_check_black_24dp);
+                    break;
+                case FORWARDED:
+                    receivedImage.setImageResource(R.drawable.ic_double_check_black_24dp);
+                    break;
+                case DELETED:
+                    receivedImage.setImageResource(android.R.drawable.ic_delete);
+                    break;
             }
         }
 

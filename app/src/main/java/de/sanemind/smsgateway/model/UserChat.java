@@ -20,7 +20,7 @@ public class UserChat extends BaseChat {
         if (nameIdentifier != null)
             return nameIdentifier;
         if (mostImportantPhoneNumber != null)
-            return mostImportantPhoneNumber.getNumber();
+            return mostImportantPhoneNumber.getNumber(true);
         return null;
     }
 
@@ -80,7 +80,7 @@ public class UserChat extends BaseChat {
     @Override
     public String getIdentifier() {
         if (mostImportantPhoneNumber != null)
-            return mostImportantPhoneNumber.getNumber();
+            return mostImportantPhoneNumber.getNumber(true);
         else
             return name;
     }

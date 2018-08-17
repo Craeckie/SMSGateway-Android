@@ -47,8 +47,14 @@ public class ButtonHolder extends RecyclerView.ViewHolder {
             }
         } else if (row.size() == 1) {
             button = itemView.findViewById(R.id.button);
-            String name = row.get(0);
+            final String name = row.get(0);
             button.setText(name);
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    messageListActivity.sendMessage(name);
+                }
+            });
         }
     }
 }

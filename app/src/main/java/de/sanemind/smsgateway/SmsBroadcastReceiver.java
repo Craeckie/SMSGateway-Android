@@ -1,6 +1,7 @@
 package de.sanemind.smsgateway;
 
 import android.app.Activity;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
@@ -158,12 +159,15 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
             }
         }
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, NotificationChannel.DEFAULT_CHANNEL_ID)
+                .setDefaults(Notification.DEFAULT_ALL)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle(receivedMessage.getChat().getName())
                 .setContentText(notificationText)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(receivedMessage.getMessage()))
                 .setAutoCancel(true)
+//                .setVibrate(new long[] {0, 500, 500, 500, 500})
+//                .setLights(Color.RED, 3000, 3000)
                 .setContentIntent(pendingIntent);
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
