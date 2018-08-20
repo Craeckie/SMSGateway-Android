@@ -70,7 +70,7 @@ public class MessageListAdapter extends android.support.v7.widget.RecyclerView.A
 //                    BaseMessage previousMessage = chatMessages.get(index + 1);
                     //TODO: correct?
                 SortedSet<BaseMessage> previousMessages = chatMessages.tailSet(message);
-                if (previousMessages.size() > 0) {
+                if (previousMessages.size() > 1) {
                     Iterator<BaseMessage> it = previousMessages.iterator();
                     it.next(); // Skip the current message
                     BaseMessage previousMessage = it.next();

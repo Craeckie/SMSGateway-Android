@@ -2,9 +2,12 @@ package de.sanemind.smsgateway.Message;
 
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.Map;
 
 import de.sanemind.smsgateway.R;
 import de.sanemind.smsgateway.Utils;
@@ -32,7 +35,21 @@ class ReceivedMessageHolder extends RecyclerView.ViewHolder {
     }
 
     void bind(BaseMessage message) {
-        messageText.setText(message.getMessage());
+        if (message.getServiceID().equalsIgnoreCase("EM")) {
+            String text = message.getMessage().replace("\n", "<br />");
+            Map<String, String> headers = message.getOtherHeaders();
+            if (headers.containsKey("Subject")) {
+                text = "<b>" + headers.get("Subject") + "</b><br /><br />" + text;
+            }
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                messageText.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
+            } else {
+                messageText.setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE);
+            }
+        } else {
+            messageText.setText(message.getMessage());
+        }
 //        messageText.setText(message.getID() + ": " + message.getMessage());
 
         if (profileImage != null) {

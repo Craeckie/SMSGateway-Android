@@ -81,6 +81,9 @@ public class ChatListFragment extends Fragment {
                 chatList = Messengers.getFB(context);
                 break;
             case 3:
+                chatList = Messengers.getEM(context);
+                break;
+            case 4:
                 chatList = Messengers.getSMS(context);
                 break;
             default:

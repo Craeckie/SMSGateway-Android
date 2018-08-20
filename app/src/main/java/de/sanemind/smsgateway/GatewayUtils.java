@@ -8,6 +8,8 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,17 +27,13 @@ public class GatewayUtils {
 
     private static Pattern idPattern = Pattern.compile("^ID: ([0-9]+)$");
     private static Pattern datePattern = Pattern.compile("^Date: ([0-9]+)$");
+    private static Pattern headerPattern = Pattern.compile("^([A-Za-z]+): (.*)$");
 
     public static BaseMessage tryParseGatewayMessage(Context context, String body, Date receivedDate, boolean isSent) {
         BaseMessage message = null;
         String[] lines = body.split("\n");
         if (lines.length > 2) {
             String identifier = lines[0].trim();
-            ChatList chatList = Messengers.listForIdentifier(context, identifier);
-            if (chatList == null) {
-                chatList = Messengers.getSMS(context);
-                identifier = "SMS";
-            }
             String from = null;
             String to = null;
             String type = null;
@@ -49,6 +47,15 @@ public class GatewayUtils {
             Date date = receivedDate;
             isSent = true;
             int ID = -1;
+            Map<String, String> otherHeaders = new HashMap<>();
+
+            ChatList chatList = Messengers.listForIdentifier(context, identifier);
+            if (chatList == null) {
+                chatList = Messengers.getSMS(context);
+                identifier = "SMS";
+            } else if (identifier.equalsIgnoreCase("EM")) {
+                type = "group";
+            }
             boolean messageStarted = false;
             for (int i = 1; i < lines.length; i++) {
                 String line = lines[i];
@@ -139,6 +146,11 @@ public class GatewayUtils {
                     } catch (NumberFormatException e) {
                         Toast.makeText(context, "Invalid " + line, Toast.LENGTH_LONG);
                     }
+                } else {
+                    Matcher matcher = headerPattern.matcher(line);
+                    if (matcher.matches()) {
+                        otherHeaders.put(matcher.group(1), matcher.group(2));
+                    }
                 }
 //                } else { // Unknown header, assume that message starts for now..
 //                    messageStarted = true;
@@ -158,7 +170,8 @@ public class GatewayUtils {
                                 chatList.get_or_create_group(context, user, user, true),
                                 null,
                                 isSent,
-                                status);
+                                status,
+                                otherHeaders);
                     } else if (type.equals("group")) {
                         if (isSent && to != null) { // I wrote to a group
                             message = new GroupMessage(
@@ -169,7 +182,8 @@ public class GatewayUtils {
                                     chatList.get_or_create_group(context, to, to, false),
                                     chatList.get_meUser(context), // TODO: correct?
                                     isSent,
-                                    status);
+                                    status,
+                                    otherHeaders);
                         } else if (!isSent && to != null && from != null) { // Somebody sent to a group
                             message = new GroupMessage(
                                     ID,
@@ -179,7 +193,8 @@ public class GatewayUtils {
                                     chatList.get_or_create_group(context, to, to, false),
                                     chatList.get_or_create_user(context, from, from, phone),
                                     isSent,
-                                    status);
+                                    status,
+                                    otherHeaders);
                         } else {
                             Toast.makeText(context, "Invalid group message:\n" + body, Toast.LENGTH_LONG);
                         }
@@ -195,7 +210,8 @@ public class GatewayUtils {
                                 identifier,
                                 chatList.get_or_create_user(context, to, to, phone),
                                 isSent,
-                                status);
+                                status,
+                                otherHeaders);
                     } else if (!isSent && from != null){ // Somebody sent me a message
                         message = new UserMessage(
                                 ID,
@@ -204,7 +220,8 @@ public class GatewayUtils {
                                 identifier,
                                 chatList.get_or_create_user(context, from, from, phone),
                                 isSent,
-                                status);
+                                status,
+                                otherHeaders);
                     } else {
                         Toast.makeText(context,"Invalid message:\n" + body, Toast.LENGTH_LONG);
                     }

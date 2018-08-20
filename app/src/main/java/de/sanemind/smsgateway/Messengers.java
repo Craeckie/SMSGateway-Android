@@ -12,6 +12,7 @@ public class Messengers {
 
     private static ChatList TG = new ChatList("TG", contactsLoader);
     private static ChatList FB = new ChatList("FB", contactsLoader);
+    private static ChatList EM = new ChatList("EM", contactsLoader);
     private static ChatList SMS = new ChatList("SMS", contactsLoader);
 
     public static final UserChat GatewayUser = new UserChat(SMS,"Gateway", "Gateway");
@@ -31,6 +32,11 @@ public class Messengers {
         return SMS;
     }
 
+    public static ChatList getEM(Context context) {
+        fillIfEmpty(context);
+        return EM;
+    }
+
     private static void fillIfEmpty(Context context) {
         if (SMS.isEmpty()) {
             contactsLoader.loadContacts(context);
@@ -48,6 +54,8 @@ public class Messengers {
                 return TG;
             case "FB":
                 return FB;
+            case "EM":
+                return EM;
             case "SMS":
                 return SMS;
             default:
@@ -61,6 +69,8 @@ public class Messengers {
             return "TG";
         else if (list == FB)
             return "FB";
+        else if (list == EM)
+            return "EM";
         else if (list == SMS)
             return "SMS";
         else
@@ -70,6 +80,7 @@ public class Messengers {
     public static void cleanChats() {
         TG.cleanChatList();
         FB.cleanChatList();
+        EM.cleanChatList();
         SMS.cleanChatList();
     }
 }

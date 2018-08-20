@@ -180,7 +180,14 @@ public class MessageList {
                 msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent);
             }
             if (msg == null) {
-                msg = new UserMessage(-1, date, body, "SMS", Messengers.getSMS(context).get_or_create_user(context, address, address, address), isSent, MessageStatus.SENT);
+                msg = new UserMessage(
+                        -1,
+                        date,
+                        body,
+                        "SMS",
+                        Messengers.getSMS(context).get_or_create_user(context, address, address, address),
+                        isSent,
+                        MessageStatus.SENT);
             }
 //            } else if (msg.isEdit()) {
 //                for (BaseMessage cur_msg : msg.getChat().getMessages()) {

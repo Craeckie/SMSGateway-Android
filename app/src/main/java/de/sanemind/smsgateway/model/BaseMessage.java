@@ -4,6 +4,8 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.sanemind.smsgateway.Messengers;
 
@@ -24,16 +26,37 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
     private Buttons buttons;
     @NonNull
     private MessageStatus status;
+    private Map<String, String> otherHeaders;
 
 
-    public BaseMessage(long ID, Date createdAt, String message, String serviceID, boolean isSent, MessageStatus status) {
+    public BaseMessage(long ID,
+                       Date createdAt,
+                       String message,
+                       String serviceID,
+                       boolean isSent,
+                       MessageStatus status) {
         this.ID = ID;
         this.createdAt = createdAt;
         this.message = message;
         this.serviceID = serviceID;
         this.isSent = isSent;
         this.status = status;
-//        this.isEdit = isEdit;
+        this.otherHeaders = new HashMap<>();
+    }
+    public BaseMessage(long ID,
+                       Date createdAt,
+                       String message,
+                       String serviceID,
+                       boolean isSent,
+                       MessageStatus status,
+                       Map<String, String> otherHeaders) {
+        this.ID = ID;
+        this.createdAt = createdAt;
+        this.message = message;
+        this.serviceID = serviceID;
+        this.isSent = isSent;
+        this.status = status;
+        this.otherHeaders = otherHeaders;
     }
 
     public Date getCreatedAt() {
@@ -66,9 +89,9 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
         this.status = status;
     }
 
-//    public boolean isEdit() {
-//        return isEdit;
-//    }
+    public Map<String, String> getOtherHeaders() {
+        return otherHeaders;
+    }
 
     public long getID() {
         return ID;

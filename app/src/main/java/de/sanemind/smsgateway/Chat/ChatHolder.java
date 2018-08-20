@@ -67,11 +67,11 @@ public class ChatHolder extends ViewHolder {
                 UserChat userChat = ((GroupMessage) lastMessage).getUser();
                 if (userChat != null) {
                     String senderName = userChat.getDisplayName();
-                    text = "<font color='#4D83B3'>" + senderName + "</font>: " + lastMessage.getMessage();
+                    text = "<font color='#4D83B3'>" + senderName + "</font>: " + text;
                 }
             }
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                lastMessageText.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
+                lastMessageText.setText(Html.fromHtml("<html><body>" + text + "</body></html>", Html.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
             } else {
                 lastMessageText.setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE);
             }
