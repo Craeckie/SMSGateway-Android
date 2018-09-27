@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +19,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.macasaet.fernet.Key;
+import com.macasaet.fernet.StringValidator;
+import com.macasaet.fernet.Token;
+import com.macasaet.fernet.Validator;
 
 import java.security.NoSuchAlgorithmException;
 
@@ -82,10 +88,18 @@ public class Main extends PermissionRequestActivity {
             public void onClick(View view) {
 
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Show notification", new View.OnClickListener() {
+                        .setAction("Decrypt!", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                new SmsBroadcastReceiver().openMessageNotification(getApplicationContext(), Messengers.GatewayUser.getLastMessage(), ChatListFragment.getInstance().values().iterator().next());
+                                //new SmsBroadcastReceiver().openMessageNotification(getApplicationContext(), Messengers.GatewayUser.getLastMessage(), ChatListFragment.getInstance().values().iterator().next());
+
+                                final Key key = new Key("1gFiPytQP-kLFy2Uxl6C7nJLduXxbQCffTbtRF-6Ix8=");
+                                final Token token = Token.fromString("gAAAAABbn8ozFocJjRraOtv1lom4EYA8HydFS2bgwBCFvDdzkWyFyHKqrqhMBT5pHwMFIn1aB_WHfjVkRycOCcXwAMc5jZWmNe2hx7vidUBRIH-ZuQFCjek=");
+                                final Validator<String> validator = new StringValidator() {
+                                };
+                                final String payload = token.validateAndDecrypt(key, validator);
+                                Log.e("payload", payload);
+                                Toast.makeText(getApplicationContext(), payload, Toast.LENGTH_LONG);
                             }
                         }).show();
             }

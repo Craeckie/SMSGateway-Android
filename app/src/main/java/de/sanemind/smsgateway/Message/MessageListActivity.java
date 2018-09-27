@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import de.sanemind.smsgateway.ButtonAdapter;
 import de.sanemind.smsgateway.Chat.ChatListFragment;
@@ -292,13 +291,13 @@ public class MessageListActivity extends PermissionRequestActivity {
                 messageAdapter.notifyDataSetChanged();
             }
         };
-        messageUpdateTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                runOnUiThread(messageUpdateRunnable);
-
-            }
-        }, 1000, 10000);
+//        messageUpdateTimer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                runOnUiThread(messageUpdateRunnable);
+//
+//            }
+//        }, 1000, 10000);
     }
     private String generateSendMessage(String serviceID, String text) {
         if (standardService != null)

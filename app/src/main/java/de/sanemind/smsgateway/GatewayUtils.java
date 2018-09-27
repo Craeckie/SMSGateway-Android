@@ -1,11 +1,18 @@
 package de.sanemind.smsgateway;
 
 import android.content.Context;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.Toast;
+
+import com.macasaet.fernet.Key;
+import com.macasaet.fernet.StringValidator;
+import com.macasaet.fernet.Token;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,8 +36,56 @@ public class GatewayUtils {
     private static Pattern datePattern = Pattern.compile("^Date: ([0-9]+)$");
     private static Pattern headerPattern = Pattern.compile("^([A-Za-z]+): (.*)$");
 
+    private static class UTF16Validator implements StringValidator {
+        public Charset getCharset() {
+            return Charset.forName("UTF-16BE");
+        }
+    }
+    private static class UTF8Validator implements StringValidator {
+        public Charset getCharset() {
+            return Charset.forName("UTF-8");
+        }
+    }
+
+    private static Key key = null;
+    private static final StringValidator utf8Validator = new UTF8Validator();
+    private static final StringValidator utf16Validator = new UTF16Validator();
+    private static String decryptBody(Context context, String body) {
+        try {
+            if (key == null) {
+                String keyString = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_sms_key", null);
+                if (keyString == null)
+                    return body;
+                key = new Key(keyString);
+            }
+            boolean isUTF8 = false;
+            if (body.startsWith("%8%")) {
+                body = body.substring("%8%".length());
+                isUTF8 = true;
+            }
+
+            Token token = Token.fromString(body);
+            if (isUTF8)
+                body = token.validateAndDecrypt(key, utf8Validator);
+            else
+                body = token.validateAndDecrypt(key, utf16Validator);
+
+        } catch (Exception e) {
+            Log.w("GW-decrypt", e);
+            Log.d("GW-decrypt", body);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        return body;
+    }
+
     public static BaseMessage tryParseGatewayMessage(Context context, String body, Date receivedDate, boolean isSent) {
         BaseMessage message = null;
+
+        if (body.startsWith("%8%")
+                || body.startsWith("gAAA")) //TODO: temporarily
+            body = decryptBody(context, body);
+
         String[] lines = body.split("\n");
         if (lines.length > 2) {
             String identifier = lines[0].trim();
@@ -234,3 +289,5 @@ public class GatewayUtils {
         return message;
     }
 }
+
+
