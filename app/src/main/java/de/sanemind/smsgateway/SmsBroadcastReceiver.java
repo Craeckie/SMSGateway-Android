@@ -164,6 +164,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 .setContentTitle(receivedMessage.getChat().getName())
                 .setContentText(notificationText)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setChannelId("0")
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(receivedMessage.getMessage()))
                 .setAutoCancel(true)
 //                .setVibrate(new long[] {0, 500, 500, 500, 500})
