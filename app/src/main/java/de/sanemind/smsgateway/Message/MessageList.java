@@ -55,11 +55,11 @@ public class MessageList {
 //        }
     }
 
-    public static BaseMessage addMessage(Context context, Date date, String body, String phoneNumber, boolean isSent, boolean sortChatList) {
+    public static BaseMessage addMessage(Context context, Date date, String body, String phoneNumber, boolean isSent,  boolean sortChatList) {
         BaseMessage msg = null;
         String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_phone_gateway", null);
         if (PhoneNumberUtils.compare(phoneNumber, gatewayNumber)) {
-            msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent);
+            msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent, phoneNumber);
         }
         if (msg != null) {
             BaseMessage currentMessage = null;
@@ -177,7 +177,7 @@ public class MessageList {
             BaseMessage msg = null;
             boolean foundEditedMessage = false;
             if (PhoneNumberUtils.compare(address, gatewayNumber)) {
-                msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent);
+                msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent, address);
             }
             if (msg == null) {
                 msg = new UserMessage(

@@ -51,6 +51,7 @@ public class GatewayUtils {
     private static final StringValidator utf8Validator = new UTF8Validator();
     private static final StringValidator utf16Validator = new UTF16Validator();
     private static String decryptBody(Context context, String body) {
+        boolean isUTF8 = false;
         try {
             if (key == null) {
                 String keyString = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_sms_key", null);
@@ -58,7 +59,6 @@ public class GatewayUtils {
                     return body;
                 key = new Key(keyString);
             }
-            boolean isUTF8 = false;
             if (body.startsWith("%8%")) {
                 body = body.substring("%8%".length());
                 isUTF8 = true;
@@ -73,18 +73,25 @@ public class GatewayUtils {
         } catch (Exception e) {
             Log.w("GW-decrypt", e);
             Log.d("GW-decrypt", body);
+            String debug = "Exception when decrypting: " + e + "\n";
+            if (isUTF8)
+                debug += "(is UTF8)\n";
+            body = debug + body;
         } catch (Throwable throwable) {
             throwable.printStackTrace();
+            String debug = "Throwable when decrypting: " + throwable.getMessage() + "\n";
+            if (isUTF8)
+                debug += "(is UTF8)\n";
+            body = debug + body;
         }
         return body;
     }
 
-    public static BaseMessage tryParseGatewayMessage(Context context, String body, Date receivedDate, boolean isSent) {
-        BaseMessage message = null;
-
+    public static BaseMessage tryParseGatewayMessage(Context context, String body, Date receivedDate, boolean isSent, String phoneNumber) {
         if (body.startsWith("%8%")
                 || body.startsWith("gAAA")) //TODO: temporarily
             body = decryptBody(context, body);
+        BaseMessage message = null;
 
         String[] lines = body.split("\n");
         if (lines.length > 2) {
@@ -285,6 +292,16 @@ public class GatewayUtils {
                     message.setButtons(buttons);
                 }
             }
+        }
+        if (message == null) {
+            message = new UserMessage(
+                    -1,
+                    receivedDate,
+                    body,
+                    "SMS",
+                    Messengers.getSMS(context).get_or_create_user(context, phoneNumber, phoneNumber, phoneNumber),
+                    isSent,
+                    MessageStatus.SENT);
         }
         return message;
     }
