@@ -73,22 +73,9 @@ public class ChatListFragment extends Fragment {
             sectionInstances = new HashMap<>();
 
         int section = getArguments().getInt(ARG_SECTION_NUMBER);
-        switch (section) {
-            case 1:
-                chatList = Messengers.getTG(context);
-                break;
-            case 2:
-                chatList = Messengers.getFB(context);
-                break;
-            case 3:
-                chatList = Messengers.getEM(context);
-                break;
-            case 4:
-                chatList = Messengers.getSMS(context);
-                break;
-            default:
-                throw new IllegalArgumentException("ChatListFragment was opened with invalid section number: " + section);
-        }
+        chatList = Messengers.listAtIndex(context, section);
+        if (chatList == null)
+            throw new IllegalArgumentException("ChatListFragment was opened with invalid section number: " + section);
 
         sectionInstances.put(chatList, this);
 

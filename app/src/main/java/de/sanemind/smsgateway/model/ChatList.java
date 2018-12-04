@@ -95,6 +95,10 @@ public class ChatList {
         Collections.sort(ChatList);
     }
 
+    public String getIdentifier() {
+        return identifier;
+    }
+
     @Override
     public int hashCode() {
         return identifier.hashCode();

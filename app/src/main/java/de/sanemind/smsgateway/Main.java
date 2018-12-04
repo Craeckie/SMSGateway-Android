@@ -34,6 +34,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 import de.sanemind.smsgateway.Chat.ChatListFragment;
+import de.sanemind.smsgateway.model.ChatList;
 
 public class Main extends PermissionRequestActivity {
 
@@ -124,6 +125,14 @@ public class Main extends PermissionRequestActivity {
     }
 
     void init() {
+        TabLayout layout = (TabLayout) findViewById(R.id.tabs);
+
+        for (ChatList list : Messengers.getChatList(getApplicationContext())) {
+            TabLayout.Tab tab = layout.newTab();
+            tab.setText(list.getIdentifier());
+            layout.addTab(tab);
+        }
+
         try {
             KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA512");
             keyGenerator.init(256);
@@ -220,7 +229,7 @@ public class Main extends PermissionRequestActivity {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
 //            if (position == 0) {
-            return ChatListFragment.newInstance(position + 1);
+            return ChatListFragment.newInstance(position);
 //            } else {
 //                return PlaceholderFragment.newInstance(position + 1);
 //            }
@@ -229,7 +238,7 @@ public class Main extends PermissionRequestActivity {
         @Override
         public int getCount() {
             // Show 3 total pages.
-            return 4;
+            return Messengers.count();
         }
     }
 }

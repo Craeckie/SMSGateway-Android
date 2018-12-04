@@ -7,7 +7,9 @@
     <string name="title_activity_test">test</string>
     <string name="tab_text_1">TG</string>
     <string name="tab_text_2">FB</string>
-    <string name="tab_text_3">SMS</string>
+    <string name="tab_text_3">SL</string>
+    <string name="tab_text_4">EM</string>
+    <string name="tab_text_5">SMS</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="request_read_sms_permission">Please allow access to SMS!</string>
