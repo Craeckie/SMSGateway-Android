@@ -15,10 +15,12 @@ public class ChatList {
 
     private ContactsLoader contactsLoader;
     private String identifier;
+    private String name;
 
-    public ChatList(String identifier, ContactsLoader contactsLoader) {
+    public ChatList(String identifier, String name, ContactsLoader contactsLoader) {
         this.contactsLoader = contactsLoader;
         this.identifier = identifier;
+        this.name = name;
     }
 
     public Boolean isEmpty() {
@@ -97,6 +99,10 @@ public class ChatList {
 
     public String getIdentifier() {
         return identifier;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override

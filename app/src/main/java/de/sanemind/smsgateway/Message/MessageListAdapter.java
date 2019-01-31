@@ -27,7 +27,7 @@ public class MessageListAdapter extends android.support.v7.widget.RecyclerView.A
 
     private Context mContext;
     BaseChat chat;
-    List<BaseMessage> curMessages;
+    public List<BaseMessage> curMessages;
 
     public MessageListAdapter(Context context, BaseChat chat) {
         mContext = context;

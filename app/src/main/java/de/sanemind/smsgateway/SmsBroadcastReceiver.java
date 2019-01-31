@@ -25,6 +25,7 @@ import de.sanemind.smsgateway.Message.MessageListActivity;
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
 import de.sanemind.smsgateway.model.ChatList;
+import de.sanemind.smsgateway.model.GroupChat;
 import de.sanemind.smsgateway.model.GroupMessage;
 import de.sanemind.smsgateway.model.UserChat;
 
@@ -108,31 +109,33 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
             String address = messages[0].getOriginatingAddress();
             cal.setTimeInMillis(messages[0].getTimestampMillis());
             final BaseMessage receivedMessage = MessageList.addMessage(context, cal.getTime(), sb.toString(), address, false, true);
-            NOTIFICATION_CHAT = receivedMessage.getChat();
-            MessageListActivity messageListActivity = MessageListActivity.instance();
-            if (messageListActivity != null && receivedMessage != null) {
-                messageListActivity.messageReceived(receivedMessage);
-            }
-            Map<ChatList, ChatListFragment> chatListFragments = ChatListFragment.getInstance();
-            if (chatListFragments != null) {
-                ChatListFragment currentFragment = null;
-                for (ChatListFragment fragment : chatListFragments.values()) {
-                    fragment.getChatListRecycler().updateAdapter();
-                    ChatList fragmentChatList = fragment.getChatList();
-                    if (fragmentChatList.equals(receivedMessage.getChatList(context)))
-                        currentFragment = fragment;
+            if (receivedMessage != null) {
+                NOTIFICATION_CHAT = receivedMessage.getChat();
+                MessageListActivity messageListActivity = MessageListActivity.instance();
+                if (messageListActivity != null && receivedMessage != null) {
+                    messageListActivity.messageReceived(receivedMessage);
                 }
-                if (currentFragment != null && receivedMessage != null && !receivedMessage.isSent()) {
-                    if (messageListActivity != null && messageListActivity.getCurrentChat().equals(receivedMessage.getChat())
-                            && messageListActivity.getWindow().isActive())
-                        return;
-                    final ChatListFragment finalCurrentFragment = currentFragment;
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            openMessageNotification(context, receivedMessage, finalCurrentFragment);
-                        }
-                    }).start();
+                Map<ChatList, ChatListFragment> chatListFragments = ChatListFragment.getInstance();
+                if (chatListFragments != null) {
+                    ChatListFragment currentFragment = null;
+                    for (ChatListFragment fragment : chatListFragments.values()) {
+                        fragment.getChatListRecycler().updateAdapter();
+                        ChatList fragmentChatList = fragment.getChatList();
+                        if (fragmentChatList.equals(receivedMessage.getChatList(context)))
+                            currentFragment = fragment;
+                    }
+                    if (currentFragment != null && receivedMessage != null && !receivedMessage.isSent()) {
+                        if (messageListActivity != null && messageListActivity.getCurrentChat().equals(receivedMessage.getChat())
+                                && messageListActivity.getWindow().isActive())
+                            return;
+                        final ChatListFragment finalCurrentFragment = currentFragment;
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                openMessageNotification(context, receivedMessage, finalCurrentFragment);
+                            }
+                        }).start();
+                    }
                 }
             }
         }
@@ -151,21 +154,23 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
         }
 
         String notificationText = receivedMessage.getMessage();
-        if (receivedMessage instanceof GroupMessage) {
-            UserChat chat = ((GroupMessage) receivedMessage).getUser();
-            if (chat != null) {
-                String senderName = chat.getDisplayName();
+        BaseChat chat = receivedMessage.getChat();
+        if (chat instanceof GroupChat) {
+            UserChat userChat = ((GroupMessage) receivedMessage).getUser();
+            if (userChat != null) {
+                String senderName = userChat.getDisplayName();
                 notificationText = senderName + ": " + receivedMessage.getMessage();
             }
         }
+        String chatListID = receivedMessage.getChat().getChatList().getIdentifier();
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, NotificationChannel.DEFAULT_CHANNEL_ID)
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle(receivedMessage.getChat().getName())
                 .setContentText(notificationText)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setChannelId("0")
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(receivedMessage.getMessage()))
+                .setChannelId(chatListID)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(notificationText))
                 .setAutoCancel(true)
 //                .setVibrate(new long[] {0, 500, 500, 500, 500})
 //                .setLights(Color.RED, 3000, 3000)

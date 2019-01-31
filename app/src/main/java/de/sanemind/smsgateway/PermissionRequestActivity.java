@@ -15,12 +15,15 @@ import de.sanemind.smsgateway.Message.MessageList;
 public abstract class PermissionRequestActivity extends AppCompatActivity {
 
     public void requestPermissions() {
+        requestPermissions(true);
+    }
+    public void requestPermissions(boolean parseMessages) {
         String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("edit_text_preference_phone_gateway", null);
         if (gatewayNumber != null && !MessageList.isRefreshedFromSMSInbox() &&
                 getPermission(Manifest.permission.READ_SMS, getString(R.string.request_read_sms_permission), READ_SMS_PERMISSIONS_REQUEST) &&
                 getPermission(Manifest.permission.READ_CONTACTS, getString(R.string.request_read_contact_permission),  READ_CONTACTS_PERMISSIONS_REQUEST) &&
                 getPermission(Manifest.permission.READ_PHONE_STATE, getString(R.string.request_read_phone_state_permission),  READ_PHONE_STATE_PERMISSIONS_REQUEST)) {
-            MessageList.refreshFromSMSInbox(getApplicationContext());
+            MessageList.refreshFromSMSInbox(getApplicationContext(), parseMessages);
         }
     }
 

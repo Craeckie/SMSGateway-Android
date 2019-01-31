@@ -19,5 +19,9 @@
         android:password="true"
         android:summary="Enter the key used to encrypt/decrypt SMS from/to your SMSGateway"
         android:title="Key for SMS" />
+    <CheckBoxPreference
+        android:key="check_box_preference_send_with_encryption"
+        android:summary="Use encryption for sending messages to your SMSGateway"
+        android:title="Send with Encryption" />
 
 </PreferenceScreen>

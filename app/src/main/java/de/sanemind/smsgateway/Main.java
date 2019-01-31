@@ -143,7 +143,9 @@ public class Main extends PermissionRequestActivity {
 
         requestPermissions();
 
-        createNotificationChannel("0", "General", "All notifications.");
+        for (ChatList list : Messengers.getChatList(getApplicationContext())) {
+            createNotificationChannel(list.getIdentifier(), list.getName(), "Messages via " + list.getName());
+        }
     }
 
     @Override

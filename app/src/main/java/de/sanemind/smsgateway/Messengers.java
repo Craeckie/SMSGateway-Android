@@ -16,7 +16,7 @@ public class Messengers {
 
     private static Map<String, ChatList> chatMap;
     private static ArrayList<ChatList> chatList;
-    private static ChatList SMS;
+    private static ChatList SMS = new ChatList("SMS", "SMS", contactsLoader);
 
     public static final UserChat GatewayUser = new UserChat(SMS,"Gateway", "Gateway");
 
@@ -24,13 +24,11 @@ public class Messengers {
         if (chatList == null) {
             chatList = new ArrayList<>();
 
-            SMS = new ChatList("SMS", contactsLoader);
-
-            chatList.add(new ChatList("TG", contactsLoader));
-            chatList.add(new ChatList("FB", contactsLoader));
-            chatList.add(new ChatList("SG", contactsLoader));
-            chatList.add(new ChatList("SL", contactsLoader));
-            chatList.add(new ChatList("EM", contactsLoader));
+            chatList.add(new ChatList("TG", "Telegram", contactsLoader));
+            chatList.add(new ChatList("FB", "Facebook", contactsLoader));
+            chatList.add(new ChatList("SG", "Signal", contactsLoader));
+            chatList.add(new ChatList("SL", "Slack", contactsLoader));
+            chatList.add(new ChatList("EM", "E-Mail", contactsLoader));
             chatList.add(SMS);
 
             chatMap = new HashMap<>();

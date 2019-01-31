@@ -1,24 +1,19 @@
-package de.sanemind.smsgateway.Message;
+package de.sanemind.smsgateway;
 
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -35,15 +30,11 @@ import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.Timer;
 
-import de.sanemind.smsgateway.ButtonAdapter;
-import de.sanemind.smsgateway.Chat.ChatListFragment;
-import de.sanemind.smsgateway.Messengers;
-import de.sanemind.smsgateway.PermissionRequestActivity;
-import de.sanemind.smsgateway.R;
-import de.sanemind.smsgateway.SmsBroadcastReceiver;
+import de.sanemind.smsgateway.Message.MessageList;
+import de.sanemind.smsgateway.Message.MessageListAdapter;
+import de.sanemind.smsgateway.Message.MessageListRecyclerView;
 import de.sanemind.smsgateway.model.BaseChat;
 import de.sanemind.smsgateway.model.BaseMessage;
-import de.sanemind.smsgateway.model.Buttons;
 import de.sanemind.smsgateway.model.ChatList;
 import de.sanemind.smsgateway.model.GroupChat;
 import de.sanemind.smsgateway.model.GroupMessage;
@@ -52,7 +43,7 @@ import de.sanemind.smsgateway.model.PhoneNumber;
 import de.sanemind.smsgateway.model.UserChat;
 import de.sanemind.smsgateway.model.UserMessage;
 
-public class MessageListActivity extends PermissionRequestActivity {
+public class DebugList extends PermissionRequestActivity {
 
     private TextView mTextMessage;
     private MessageListRecyclerView messageRecycler;
@@ -62,8 +53,6 @@ public class MessageListActivity extends PermissionRequestActivity {
     private TextView mChatBox;
 //    private LinearLayout layoutButtons;
 //    private ScrollView scrollButtons;
-    private RecyclerView buttonRecycler;
-    private ButtonAdapter buttonAdapter;
     private Button buttonButtons;
 
     private ChatList chatList;
@@ -96,9 +85,9 @@ public class MessageListActivity extends PermissionRequestActivity {
 //        }
 //    };
 
-    private static MessageListActivity inst;
+    private static DebugList inst;
 
-    public static MessageListActivity instance() {
+    public static DebugList instance() {
         return inst;
     }
 
@@ -118,30 +107,8 @@ public class MessageListActivity extends PermissionRequestActivity {
                 messageAdapter.notifyItemInserted(0);
                 messageRecycler.scrollToPosition(0);
             }
-            BaseMessage msg = messages.first();
-            Buttons btns = msg.getButtons();
-            setButtons(btns);
-            if (btns != null) {
-                buttonButtons.setVisibility(View.VISIBLE);
-            } else {
-                buttonButtons.setVisibility(View.GONE);
-            }
         }
     }
-
-    void setButtons(Buttons btns) {
-
-        Context context = getApplicationContext();
-
-        if (btns != null) {
-            buttonAdapter.setButtons(btns);
-            buttonAdapter.notifyDataSetChanged();
-        } else {
-            buttonAdapter.setButtons(new Buttons());
-            buttonAdapter.notifyDataSetChanged();
-        }
-    }
-
     @Override
     protected void onStop() {
         messageUpdateTimer.cancel();
@@ -151,50 +118,23 @@ public class MessageListActivity extends PermissionRequestActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_message_list);
+        setContentView(R.layout.activity_debug_list);
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
         TextView titleText = (TextView) findViewById(R.id.toolbar_title);
         final Button toggleButtons = findViewById(R.id.button_buttons);
-        buttonRecycler = findViewById(R.id.recyclerview_button_list);
-//        layoutButtons = findViewById(R.id.layout_buttons);
-//        scrollButtons = findViewById(R.id.scroll_buttons);
 
 
         buttonButtons = findViewById(R.id.button_buttons);
 
         if (!MessageList.isRefreshedFromSMSInbox()) {
-            requestPermissions();
+            requestPermissions(false);
         }
 
-        Intent intent = getIntent();
-        String messengerIdentifier = intent.getStringExtra(ChatListFragment.EXTRA_MESSENGER);
-        String chatName = intent.getStringExtra(ChatListFragment.EXTRA_CHAT);
-        String chatType = intent.getStringExtra(ChatListFragment.EXTRA_CHAT_TYPE);
-        chatList = Messengers.listForIdentifier(getApplicationContext(), messengerIdentifier);
-        if (chatType.equals("USER")) {
-            currentChat = chatList.get_or_create_user(getApplicationContext(), chatName, chatName, chatName);
-            titleText.setText(currentChat.getName() + "\n" + currentChat.getIdentifier());
-            ImageView profileImage = (ImageView) findViewById(R.id.image_message_profile);
-            UserChat userChat = (UserChat) currentChat;
-            if (userChat.getPictureUri() != null) {
-                Uri uri = userChat.getPictureUri();
-                profileImage.setImageURI(uri);
-            } else {
-                profileImage.setImageURI(null);
-            }
-        }
-        else if (chatType.equals("GROUP")) {
-            currentChat = chatList.get_or_create_group(getApplicationContext(), chatName, chatName, false);
-            titleText.setText( currentChat.getDisplayName());
-        }
-        else if (chatType.equals("CHANNEL")) {
-            currentChat = chatList.get_or_create_group(getApplicationContext(), chatName, chatName, true);
-            titleText.setText(currentChat.getDisplayName());
-        } else
-            throw new IllegalArgumentException("Unknown chat type!");
-
+        chatList = Messengers.getSMS(getApplicationContext());
+        currentChat = Messengers.GatewayUser;
+        titleText.setText(currentChat.getName() + "\n" + currentChat.getIdentifier());
+        ImageView profileImage = (ImageView) findViewById(R.id.image_message_profile);
+        profileImage.setImageURI(null);
         BaseChat notificationChat = SmsBroadcastReceiver.NOTIFICATION_CHAT;
         if (notificationChat != null && SmsBroadcastReceiver.NOTIFICATION_CHAT.equals(currentChat)) {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
@@ -202,23 +142,6 @@ public class MessageListActivity extends PermissionRequestActivity {
         }
 
         BaseMessage msg = currentChat.getMessages().first();
-        Buttons btns = msg.getButtons();
-//
-        if (btns != null) {
-            buttonAdapter = new ButtonAdapter(btns, this);
-            buttonButtons.setVisibility(View.VISIBLE);
-            View view = this.getCurrentFocus();
-            if (view != null) {
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-            }
-        } else {
-            buttonAdapter = new ButtonAdapter(new Buttons(), this);
-            buttonButtons.setVisibility(View.GONE);
-        }
-        LinearLayoutManager buttonLayoutManager = new LinearLayoutManager(this);
-        buttonRecycler.setLayoutManager(buttonLayoutManager );
-        buttonRecycler.setAdapter(buttonAdapter);
 
         messageAdapter = new MessageListAdapter(this, currentChat);
 
@@ -243,43 +166,19 @@ public class MessageListActivity extends PermissionRequestActivity {
                 }
             }
         });
-        toggleButtons.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int visibility = buttonRecycler.getVisibility();
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (visibility != View.VISIBLE) {
-                    buttonRecycler.setVisibility(View.VISIBLE);
-                    imm.hideSoftInputFromWindow(mChatBox.getWindowToken(), 0);
-                    toggleButtons.setText("KEYB");
-                } else {
-                    buttonRecycler.setVisibility(View.GONE);
-                    imm.toggleSoftInputFromWindow(
-                            mChatBox.getApplicationWindowToken(),
-                            InputMethodManager.SHOW_FORCED, 0);
-                    toggleButtons.setText("BTNS");
-                }
-            }
-        });
 
-        mChatBox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                buttonRecycler.setVisibility(View.GONE);
-            }
-        });
-        mChatBox.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                String text = editable.toString();
-            }
-        });
+//        mChatBox.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+//
+//            @Override
+//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+//
+//            @Override
+//            public void afterTextChanged(Editable editable) {
+//                String text = editable.toString();
+//            }
+//        });
 
 
         standardService = currentChat.getMostUsedService();
@@ -331,9 +230,9 @@ public class MessageListActivity extends PermissionRequestActivity {
             }
             lines.add("");
             lines.add(text);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 message = String.join("\n", lines);
-            } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 StringJoiner joiner = new StringJoiner("\n");
                 for (String line : lines) {
                     joiner.add(line);
@@ -341,29 +240,26 @@ public class MessageListActivity extends PermissionRequestActivity {
                 message = joiner.toString();
             } else {
                 StringBuilder builder = new StringBuilder();
-                 for (String line : lines) {
+                for (String line : lines) {
                     builder.append(line + "\n");
                 }
                 builder.deleteCharAt(builder.length() - 1); //Remove last newline
                 message = builder.toString();
             }
 
-            boolean useEncryption = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean("check_box_preference_send_with_encryption", false);
-            if (useEncryption) {
-                try {
-                    if (key == null) {
-                        String keyString = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("edit_text_preference_sms_key", null);
-                        if (keyString == null)
-                            return message;
-                        key = new Key(keyString);
-                    }
-
-                    Token token = Token.generate(random, key, message);
-                    message = "%8%" + token.serialise();
-
-                } catch (Exception e) {
-                    Toast.makeText(getApplicationContext(), "Couldn't encrypt message! Sending unencrypted..\nMessage: " + e.getLocalizedMessage(), Toast.LENGTH_LONG);
+            try {
+                if (key == null) {
+                    String keyString = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("edit_text_preference_sms_key", null);
+                    if (keyString == null)
+                        return message;
+                    key = new Key(keyString);
                 }
+
+                Token token = Token.generate(random, key, message);
+                message = "%8%" + token.serialise();
+
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(), "Couldn't encrypt message! Sending unencrypted..\nMessage: " + e.getLocalizedMessage(), Toast.LENGTH_LONG);
             }
 
 //            try {
@@ -461,17 +357,5 @@ public class MessageListActivity extends PermissionRequestActivity {
         }
         return super.onOptionsItemSelected(item);
 
-    }
-
-    public MessageListRecyclerView getMessageRecycler() {
-        return messageRecycler;
-    }
-
-    public MessageListAdapter getMessageAdapter() {
-        return messageAdapter;
-    }
-
-    public BaseChat getCurrentChat() {
-        return currentChat;
     }
 }

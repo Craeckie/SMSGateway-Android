@@ -56,10 +56,15 @@ public class MessageList {
     }
 
     public static BaseMessage addMessage(Context context, Date date, String body, String phoneNumber, boolean isSent,  boolean sortChatList) {
+        return addMessage(context, date, body, phoneNumber, isSent, sortChatList, true);
+    }
+    public static BaseMessage addMessage(Context context, Date date, String body, String phoneNumber, boolean isSent,  boolean sortChatList, boolean parseMessages) {
         BaseMessage msg = null;
         String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_phone_gateway", null);
-        if (PhoneNumberUtils.compare(phoneNumber, gatewayNumber)) {
+        if (parseMessages && PhoneNumberUtils.compare(phoneNumber, gatewayNumber)) {
             msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent, phoneNumber);
+        } else if (!parseMessages) {
+            body = GatewayUtils.decryptBody(context, body);
         }
         if (msg != null) {
             BaseMessage currentMessage = null;
@@ -88,21 +93,23 @@ public class MessageList {
 //                }
 ////            }
         }
-        else if (msg == null) {
-            msg = new UserMessage(-1, date, body, "SMS", Messengers.getSMS(context).get_or_create_user(context, null, null, phoneNumber), isSent, MessageStatus.SENT);
-        }
-        MessageList.addMessage(msg);
-        ChatList chatList = msg.getChatList(context);
-        //TODO: do not add user to the ChatList which posted to a group, so we don't need to remove it
-        if (msg instanceof GroupMessage) {
-            GroupMessage groupMsg = (GroupMessage)msg;
-            UserChat user = groupMsg.getUser();
-            if (user != null && user.getMessages().size() == 0)
-                chatList.ChatList.remove(user);
-        }
-        if (sortChatList)
-            Collections.sort(chatList.ChatList);
+//        else if (msg == null) {
+//            msg = new UserMessage(-1, date, body, "SMS", Messengers.getSMS(context).get_or_create_user(context, null, null, phoneNumber), isSent, MessageStatus.SENT);
+//        }
+        if (msg != null) {
+            MessageList.addMessage(msg);
+            ChatList chatList = msg.getChatList(context);
+            //TODO: do not add user to the ChatList which posted to a group, so we don't need to remove it
+            if (msg instanceof GroupMessage) {
+                GroupMessage groupMsg = (GroupMessage) msg;
+                UserChat user = groupMsg.getUser();
+                if (user != null && user.getMessages().size() == 0)
+                    chatList.ChatList.remove(user);
+            }
+            if (sortChatList)
+                Collections.sort(chatList.ChatList);
 //        MessageList.sortChatMessages(msg.getChat());
+        }
         return msg;
     }
 
@@ -143,12 +150,15 @@ public class MessageList {
     }
 
     public static void refreshFromSMSInbox(Context context) {
+        refreshFromSMSInbox(context, true);
+    }
+    public static void refreshFromSMSInbox(Context context, boolean parseMessages) {
         setRefreshedFromSMSInbox();
 //        messageList.clear();
 //        List<BaseMessage> receivedMessages = getMessages(contentResolver, "content://sms/inbox", false, 50);
 //        List<BaseMessage> sentMessages = getMessages(contentResolver, "content://sms/sent", true, -1);
-        getMessages(context, "content://sms/inbox", false);
-        getMessages(context, "content://sms/sent", true);
+        getMessages(context, "content://sms/inbox", false, parseMessages);
+        getMessages(context, "content://sms/sent", true, parseMessages);
 
 //        messageList.addAll(sentMessages);
 //        messageList.addAll(receivedMessages);
@@ -156,8 +166,11 @@ public class MessageList {
 //        Collections.sort(ChatList.ChatList);
         Messengers.cleanChats();
     }
-
     private static void getMessages(Context context, String uri, boolean isSent) {
+        getMessages(context, uri, isSent, true);
+    }
+
+    private static void getMessages(Context context, String uri, boolean isSent, boolean parseMessages) {
 //        List<BaseMessage> messages = new LinkedList<>();
         String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_phone_gateway", null);
         Cursor smsInboxCursor = context.getContentResolver().query(Uri.parse(uri), null, null, null, null);
@@ -175,11 +188,11 @@ public class MessageList {
             cal.setTimeInMillis(dateTimestamp);
             Date date = cal.getTime();
             BaseMessage msg = null;
-            boolean foundEditedMessage = false;
-            if (PhoneNumberUtils.compare(address, gatewayNumber)) {
+//            boolean foundEditedMessage = false;
+            if (parseMessages && PhoneNumberUtils.compare(address, gatewayNumber)) {
                 msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent, address);
-            }
-            if (msg == null) {
+            } else if (!parseMessages) {
+                body = GatewayUtils.decryptBody(context, body);
                 msg = new UserMessage(
                         -1,
                         date,
@@ -199,9 +212,10 @@ public class MessageList {
 //                }
 //            }
 //            if (!foundEditedMessage)
-            BaseChat chat = msg.getChat();
-            if (chat != null) // Is message disposable?
-                msg.getChat().addMessage(msg);
+            if (msg != null) {
+                BaseChat chat = msg.getChat();
+                if (chat != null) // Is message disposable?
+                    msg.getChat().addMessage(msg);
 //                msg.getChat().addMessage(msg, 0);
 //            messages.add(msg);
 //            if (PhoneNumberUtils.compare(from, GatewayNumber)) {
@@ -209,6 +223,7 @@ public class MessageList {
 //            } else { //else if (PhoneNumberUtils.compare(from, UserChat.currentUser.phoneNumber)) {
 //                mMessageAdapter.getmMessageList().add(new UserMessage(body, ChatList.get_or_create(from), new Date()));
 //            }
+            }
         } while (smsInboxCursor.moveToNext());
         smsInboxCursor.close();
         return;

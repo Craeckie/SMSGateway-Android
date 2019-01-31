@@ -28,19 +28,18 @@
             android:paddingLeft="6dp"
             android:paddingRight="6dp"
             android:paddingTop="6dp"
-            android:text="hi man, how are you?"
+            android:text="heyhey, how are you doin' man?"
             android:textColor="#ffffff"
             android:textIsSelectable="true"
             android:textSize="@dimen/message_text_size"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:layout_editor_absoluteX="2dp"
             tools:layout_editor_absoluteY="2dp" />
 
         <TextView
             android:id="@+id/text_message_time"
-            android:text="11:40"
+            android:text="a long time ago"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingBottom="2dp"

@@ -50,7 +50,10 @@ public class GatewayUtils {
     private static Key key = null;
     private static final StringValidator utf8Validator = new UTF8Validator();
     private static final StringValidator utf16Validator = new UTF16Validator();
-    private static String decryptBody(Context context, String body) {
+    public static String decryptBody(Context context, String body) {
+        if (!body.startsWith("%8%")
+                && !body.startsWith("gAAA")) //TODO: temporarily
+            return body;
         boolean isUTF8 = false;
         try {
             if (key == null) {
@@ -88,9 +91,8 @@ public class GatewayUtils {
     }
 
     public static BaseMessage tryParseGatewayMessage(Context context, String body, Date receivedDate, boolean isSent, String phoneNumber) {
-        if (body.startsWith("%8%")
-                || body.startsWith("gAAA")) //TODO: temporarily
-            body = decryptBody(context, body);
+
+        body = decryptBody(context, body);
         BaseMessage message = null;
 
         String[] lines = body.split("\n");
@@ -247,13 +249,14 @@ public class GatewayUtils {
                                     status,
                                     otherHeaders);
                         } else if (!isSent && to != null && from != null) { // Somebody sent to a group
+
                             message = new GroupMessage(
                                     ID,
                                     date,
                                     messageBody,
                                     identifier,
                                     chatList.get_or_create_group(context, to, to, false),
-                                    chatList.get_or_create_user(context, from, from, phone),
+                                    chatList.get_or_create_user(context, from, phone != null ? phone : from, phone),
                                     isSent,
                                     status,
                                     otherHeaders);
@@ -270,7 +273,7 @@ public class GatewayUtils {
                                 date,
                                 messageBody,
                                 identifier,
-                                chatList.get_or_create_user(context, to, to, phone),
+                                chatList.get_or_create_user(context, to, phone != null ? phone : to, phone),
                                 isSent,
                                 status,
                                 otherHeaders);
@@ -280,7 +283,7 @@ public class GatewayUtils {
                                 date,
                                 messageBody,
                                 identifier,
-                                chatList.get_or_create_user(context, from, from, phone),
+                                chatList.get_or_create_user(context, from, phone != null ? phone : from, phone),
                                 isSent,
                                 status,
                                 otherHeaders);
