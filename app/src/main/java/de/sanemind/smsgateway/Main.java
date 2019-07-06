@@ -2,6 +2,7 @@ package de.sanemind.smsgateway;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,6 +13,8 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -61,8 +64,9 @@ public class Main extends PermissionRequestActivity {
         setContentView(R.layout.activity_main);
 
         instance = this;
+        Context context = getApplicationContext();
 
-        String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("edit_text_preference_phone_gateway", null);
+        String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_phone_gateway", null);
         if (gatewayNumber == null) {
             startActivityForResult(new Intent(this, SettingsActivity.class), 42);
             Toast.makeText(getApplicationContext(), "Need to set phone number of SMSGateway first!", Toast.LENGTH_LONG).show();
@@ -85,6 +89,7 @@ public class Main extends PermissionRequestActivity {
 
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -109,12 +114,14 @@ public class Main extends PermissionRequestActivity {
             }
         });
     }
-
     private void createNotificationChannel(String ID, String name, String description) {
+        createNotificationChannel(ID, name, description, NotificationManager.IMPORTANCE_DEFAULT);
+    }
+
+    private void createNotificationChannel(String ID, String name, String description, int importance) {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(ID, name, importance);
             channel.setDescription(description);
             // Register the channel with the system; you can't change the importance
@@ -145,6 +152,23 @@ public class Main extends PermissionRequestActivity {
 
         for (ChatList list : Messengers.getChatList(getApplicationContext())) {
             createNotificationChannel(list.getIdentifier(), list.getName(), "Messages via " + list.getName());
+        }
+        Context context = getApplicationContext();
+        String keep_alive_channel = "keep-alive";
+        createNotificationChannel(keep_alive_channel, "Keep-Alive Notification", "Keeps SMSGateway running, can be hidden.", NotificationManager.IMPORTANCE_MIN);
+        if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("check_box_preference_keepalive_notification", false)) {
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, NotificationChannel.DEFAULT_CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setContentTitle("SMSGateway is running")
+                    .setPriority(NotificationCompat.PRIORITY_MIN)
+                    .setChannelId(keep_alive_channel)
+                    .setAutoCancel(false)
+                    .setOngoing(true);
+//                .setVibrate(new long[] {0, 500, 500, 500, 500})
+//                .setLights(Color.RED, 3000, 3000)
+//                    .setContentIntent(pendingIntent);
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+            notificationManager.notify(0, mBuilder.build());
         }
     }
 
