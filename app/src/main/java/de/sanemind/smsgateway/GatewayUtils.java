@@ -225,18 +225,18 @@ public class GatewayUtils {
             if (!messageBody.isEmpty() && !messageBody.equals("\n") && (from != null || to != null)) {
                 String user = isSent ? to : from;
                 if (type != null && !type.equals("user")) {
-                    if (type.equals("channel") && user != null) { // Someone sent to a channel
-                        message = new GroupMessage(
-                                ID,
-                                date,
-                                messageBody,
-                                identifier,
-                                chatList.get_or_create_group(context, user, user, true),
-                                null,
-                                isSent,
-                                status,
-                                otherHeaders);
-                    } else if (type.equals("group")) {
+//                    if (type.equals("channel") && user != null) { // Someone sent to a channel
+//                        message = new GroupMessage(
+//                                ID,
+//                                date,
+//                                messageBody,
+//                                identifier,
+//                                chatList.get_or_create_group(context, user, user, true),
+//                                null,
+//                                isSent,
+//                                status,
+//                                otherHeaders);
+                    if (type.equals("group") || type.equals("channel")) {
                         if (isSent && to != null) { // I wrote to a group
                             message = new GroupMessage(
                                     ID,
