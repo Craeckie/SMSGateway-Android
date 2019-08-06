@@ -71,6 +71,9 @@ public class MessageListActivity extends PermissionRequestActivity {
 
     private String standardService = null;
 
+    //TODO: use different SIM depending on settings
+    //see https://stackoverflow.com/a/46666300
+    // and https://github.com/signalapp/Signal-Android/pull/5199/files
     private SmsManager smsManager = SmsManager.getDefault();
 
     private Timer messageUpdateTimer;

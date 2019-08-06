@@ -24,4 +24,14 @@
         android:summary="Use encryption for sending messages to your SMSGateway"
         android:title="Send with Encryption" />
 
+    <ListPreference
+        android:key="sim_preference"
+        android:title="SIM Card"
+        android:summary="Choose which SIM card should be used to send SMS to your SMSGateway"
+        android:entries="@array/SIMCardValues"
+        android:entryValues="@array/SIMCardValues" />
+    <CheckBoxPreference
+        android:key="check_box_preference_keepalive_notification"
+        android:summary="Show a notification to keep this app running (can be hidden in system settings)"
+        android:title="Keep-Alive Notification" />
 </PreferenceScreen>

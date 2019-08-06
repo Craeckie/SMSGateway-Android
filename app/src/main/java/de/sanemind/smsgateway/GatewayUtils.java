@@ -9,11 +9,7 @@ import com.macasaet.fernet.Key;
 import com.macasaet.fernet.StringValidator;
 import com.macasaet.fernet.Token;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -94,6 +90,8 @@ public class GatewayUtils {
 
         body = decryptBody(context, body);
         BaseMessage message = null;
+        int ID = -1;
+        MessageStatus status = MessageStatus.FORWARDED;
 
         String[] lines = body.split("\n");
         if (lines.length > 2) {
@@ -105,12 +103,10 @@ public class GatewayUtils {
 //            String channel = null;
             String phone = null;
             String messageBody = "";
-            MessageStatus status = MessageStatus.FORWARDED;
             Buttons buttons = null;
 //            boolean isEdit = false;
             Date date = receivedDate;
             isSent = true;
-            int ID = -1;
             Map<String, String> otherHeaders = new HashMap<>();
 
             ChatList chatList = Messengers.listForIdentifier(context, identifier);
@@ -174,13 +170,10 @@ public class GatewayUtils {
                     }
                 } else if (line.startsWith("Status: ")) {
                     String statusString = line.substring("Status: ".length());
-                    if (statusString.equalsIgnoreCase("processed")) {
+                    status = MessageStatus.valueOf(statusString.toLowerCase());
+                    if (status == MessageStatus.FORWARDED) {
                         // Ignore the messages just indicating that this message was about to be sent to TG
                         return new UserMessage(Long.MIN_VALUE, new Date(0), "", "", null, false, MessageStatus.FORWARDED);
-                    } else if (statusString.equalsIgnoreCase("deleted")) {
-                        status = MessageStatus.DELETED;
-                    } else if (statusString.equalsIgnoreCase("edited")) {
-                        status = MessageStatus.EDITED;
                     }
                 } else if (line.startsWith("Date: ")) {
                     Matcher dateMatch = datePattern.matcher(line);
@@ -298,13 +291,14 @@ public class GatewayUtils {
         }
         if (message == null) {
             message = new UserMessage(
-                    -1,
+                    ID,
                     receivedDate,
                     body,
                     "SMS",
                     Messengers.getSMS(context).get_or_create_user(context, phoneNumber, phoneNumber, phoneNumber),
                     isSent,
-                    MessageStatus.SENT);
+                    status
+                    );
         }
         return message;
     }

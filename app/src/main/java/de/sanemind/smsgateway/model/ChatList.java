@@ -27,6 +27,10 @@ public class ChatList {
         return ChatList.isEmpty();
     }
 
+    public List<BaseChat> getAllChats() {
+        return ChatList;
+    }
+
     public GroupChat get_or_create_group(Context context, String groupName, String groupIdentifier, boolean isChannel) {
         GroupChat g = find_group(context, groupIdentifier, isChannel);
         if (g != null)

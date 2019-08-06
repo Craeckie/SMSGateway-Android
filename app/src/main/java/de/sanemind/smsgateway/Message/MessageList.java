@@ -66,14 +66,30 @@ public class MessageList {
         } else if (!parseMessages) {
             body = GatewayUtils.decryptBody(context, body);
         }
-        if (msg != null) {
-            BaseMessage currentMessage = null;
-            BaseChat chat = msg.getChat();
-            if (isSent) {
-                BaseMessage refMessage = chat.getMessageFromID(Long.MAX_VALUE);
-                if (refMessage != null)
-                    chat.getMessages().remove(refMessage);
+        if (msg.getStatus() == MessageStatus.DELETED) {
+            List<BaseChat> chats = msg.getChatList(context).getAllChats();
+            int counter = 0;
+            for (BaseChat c : chats) {
+                BaseMessage ref_msg = c.getMessageFromID(msg.getID());
+                if (ref_msg != null) {
+                    ref_msg.setStatus(MessageStatus.DELETED);
+                    msg = ref_msg;
+                    break;
+                }
+                // Only the 10 last chats
+                if (counter >= 10)
+                    break;
+                counter++;
             }
+        } else {
+            if (msg != null) {
+                BaseMessage currentMessage = null;
+                BaseChat chat = msg.getChat();
+                if (isSent) {
+                    BaseMessage refMessage = chat.getMessageFromID(Long.MAX_VALUE);
+                    if (refMessage != null)
+                        chat.getMessages().remove(refMessage);
+                }
 //            if (messages.containsKey(msg.getID())) {
 //                currentMessage = msg.getChat().getMessages().get(msg.getID()); // Get the element with the same ID as the received message
 //            }
@@ -92,23 +108,24 @@ public class MessageList {
 ////                    break;
 //                }
 ////            }
-        }
+            }
 //        else if (msg == null) {
 //            msg = new UserMessage(-1, date, body, "SMS", Messengers.getSMS(context).get_or_create_user(context, null, null, phoneNumber), isSent, MessageStatus.SENT);
 //        }
-        if (msg != null) {
-            MessageList.addMessage(msg);
-            ChatList chatList = msg.getChatList(context);
-            //TODO: do not add user to the ChatList which posted to a group, so we don't need to remove it
-            if (msg instanceof GroupMessage) {
-                GroupMessage groupMsg = (GroupMessage) msg;
-                UserChat user = groupMsg.getUser();
-                if (user != null && user.getMessages().size() == 0)
-                    chatList.ChatList.remove(user);
-            }
-            if (sortChatList)
-                Collections.sort(chatList.ChatList);
+            if (msg != null) {
+                MessageList.addMessage(msg);
+                ChatList chatList = msg.getChatList(context);
+                //TODO: do not add user to the ChatList which posted to a group, so we don't need to remove it
+                if (msg instanceof GroupMessage) {
+                    GroupMessage groupMsg = (GroupMessage) msg;
+                    UserChat user = groupMsg.getUser();
+                    if (user != null && user.getMessages().size() == 0)
+                        chatList.ChatList.remove(user);
+                }
+                if (sortChatList)
+                    Collections.sort(chatList.ChatList);
 //        MessageList.sortChatMessages(msg.getChat());
+            }
         }
         return msg;
     }
@@ -160,6 +177,13 @@ public class MessageList {
         getMessages(context, "content://sms/inbox", false, parseMessages);
         getMessages(context, "content://sms/sent", true, parseMessages);
 
+//        for (int i = 0; i < Messengers.count(); i++) {
+//            ChatList list = Messengers.listAtIndex(context, i);
+//            for (BaseChat c :list.getAllChats()) {
+//
+//            }
+//        }
+
 //        messageList.addAll(sentMessages);
 //        messageList.addAll(receivedMessages);
 
@@ -180,28 +204,32 @@ public class MessageList {
         if (indexBody < 0 || !smsInboxCursor.moveToFirst())
             return;
         Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, -14);
+        Date timeLimit = cal.getTime();
         do {
-            String address = smsInboxCursor.getString(indexAddress);
-            String body = smsInboxCursor.getString(indexBody);
             String dateStr = smsInboxCursor.getString(indexDate);
             Long dateTimestamp = Long.parseLong(dateStr);
             cal.setTimeInMillis(dateTimestamp);
             Date date = cal.getTime();
-            BaseMessage msg = null;
+            if (date.after(timeLimit)) {
+                String address = smsInboxCursor.getString(indexAddress);
+                String body = smsInboxCursor.getString(indexBody);
+                BaseMessage msg = null;
 //            boolean foundEditedMessage = false;
-            if (parseMessages && PhoneNumberUtils.compare(address, gatewayNumber)) {
-                msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent, address);
-            } else if (!parseMessages) {
-                body = GatewayUtils.decryptBody(context, body);
-                msg = new UserMessage(
-                        -1,
-                        date,
-                        body,
-                        "SMS",
-                        Messengers.getSMS(context).get_or_create_user(context, address, address, address),
-                        isSent,
-                        MessageStatus.SENT);
-            }
+                if (parseMessages && PhoneNumberUtils.compare(address, gatewayNumber)) {
+                    msg = GatewayUtils.tryParseGatewayMessage(context, body, date, isSent, address);
+                } else if (!parseMessages) {
+                    body = GatewayUtils.decryptBody(context, body);
+                    msg = new UserMessage(
+                            -1,
+                            date,
+                            body,
+                            "SMS",
+                            Messengers.getSMS(context).get_or_create_user(context, address, address, address),
+                            isSent,
+                            MessageStatus.SENT);
+                }
+
 //            } else if (msg.isEdit()) {
 //                for (BaseMessage cur_msg : msg.getChat().getMessages()) {
 //                    if (cur_msg.getID() == msg.getID()) {
@@ -212,10 +240,10 @@ public class MessageList {
 //                }
 //            }
 //            if (!foundEditedMessage)
-            if (msg != null) {
-                BaseChat chat = msg.getChat();
-                if (chat != null) // Is message disposable?
-                    msg.getChat().addMessage(msg);
+                if (msg != null) {
+                    BaseChat chat = msg.getChat();
+                    if (chat != null) // Is message disposable?
+                        msg.getChat().addMessage(msg);
 //                msg.getChat().addMessage(msg, 0);
 //            messages.add(msg);
 //            if (PhoneNumberUtils.compare(from, GatewayNumber)) {
@@ -223,6 +251,7 @@ public class MessageList {
 //            } else { //else if (PhoneNumberUtils.compare(from, UserChat.currentUser.phoneNumber)) {
 //                mMessageAdapter.getmMessageList().add(new UserMessage(body, ChatList.get_or_create(from), new Date()));
 //            }
+                }
             }
         } while (smsInboxCursor.moveToNext());
         smsInboxCursor.close();
