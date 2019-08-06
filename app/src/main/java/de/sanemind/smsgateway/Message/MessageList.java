@@ -10,6 +10,7 @@ import android.telephony.PhoneNumberUtils;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import de.sanemind.smsgateway.GatewayUtils;
 import de.sanemind.smsgateway.Messengers;
