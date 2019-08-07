@@ -301,6 +301,8 @@ public class GatewayUtils {
                     return null;
                 else
                     Log.d("GU", message.getMessage());
+            if (identifier == null)
+                identifier = "SMS";
             message = new UserMessage(
                     ID,
                     receivedDate,

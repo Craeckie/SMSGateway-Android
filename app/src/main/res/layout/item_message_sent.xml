@@ -29,7 +29,6 @@
             android:paddingRight="6dp"
             android:paddingTop="6dp"
             android:text="hi man, how are you?"
-            android:textColor="@color/colorText"
             android:textIsSelectable="true"
             android:textSize="@dimen/message_text_size"
             tools:layout_editor_absoluteX="2dp"

@@ -389,7 +389,9 @@ public class MessageListActivity extends PermissionRequestActivity {
         if (currentChat != null) {
             Context context = getApplicationContext();
             String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_phone_gateway", null);
-            String serviceID = "TG";
+            String serviceID = currentChat.getMostUsedService();
+            if (serviceID == null)
+                serviceID = "SMS";
 
             String message = generateSendMessage(serviceID, text);
 
