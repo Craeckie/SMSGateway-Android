@@ -77,8 +77,8 @@ public class MessageList {
                     msg = ref_msg;
                     break;
                 }
-                // Only the 10 last chats
-                if (counter >= 10)
+                // Only the 20 last chats
+                if (counter >= 20)
                     break;
                 counter++;
             }
@@ -198,7 +198,7 @@ public class MessageList {
     private static void getMessages(Context context, String uri, boolean isSent, boolean parseMessages) {
 //        List<BaseMessage> messages = new LinkedList<>();
         String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_phone_gateway", null);
-        Cursor smsInboxCursor = context.getContentResolver().query(Uri.parse(uri), null, null, null, null);
+        Cursor smsInboxCursor = context.getContentResolver().query(Uri.parse(uri), null, null, null, "date");
         int indexBody = smsInboxCursor.getColumnIndex("body");
         int indexAddress = smsInboxCursor.getColumnIndex("address");
         int indexDate = smsInboxCursor.getColumnIndex("date");
@@ -210,9 +210,10 @@ public class MessageList {
         do {
             String dateStr = smsInboxCursor.getString(indexDate);
             Long dateTimestamp = Long.parseLong(dateStr);
-            cal.setTimeInMillis(dateTimestamp);
-            Date date = cal.getTime();
-            if (date.after(timeLimit)) {
+            //if (date.after(timeLimit)) {
+            if (dateTimestamp >= timeLimit.getTime()) {
+                cal.setTimeInMillis(dateTimestamp);
+                Date date = cal.getTime();
                 String address = smsInboxCursor.getString(indexAddress);
                 String body = smsInboxCursor.getString(indexBody);
                 BaseMessage msg = null;
