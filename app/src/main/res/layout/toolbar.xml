@@ -10,7 +10,7 @@
     android:layout_gravity="center"
     android:gravity="center"
     android:minHeight="@dimen/actionBarSize"
-    app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+    app:theme="@style/ThemeOverlay.AppCompat.Light"
     app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
     android:background="@color/colorPrimary">
     <LinearLayout

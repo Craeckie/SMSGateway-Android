@@ -23,6 +23,7 @@
             android:background="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/AppTheme.PopupOverlay"
+            android:textColor="@color/colorText"
             app:title="@string/app_name">
 
         </android.support.v7.widget.Toolbar>

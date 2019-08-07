@@ -29,7 +29,7 @@
             android:paddingRight="6dp"
             android:paddingTop="6dp"
             android:text="heyhey, how are you doin' man?"
-            android:textColor="#ffffff"
+            android:textColor="@color/colorText"
             android:textIsSelectable="true"
             android:textSize="@dimen/message_text_size"
             app:layout_constraintLeft_toLeftOf="parent"

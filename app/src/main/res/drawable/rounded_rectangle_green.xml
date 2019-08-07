@@ -4,7 +4,7 @@
     android:shape="rectangle" >
 
     <!-- View background color -->
-    <solid android:color="@android:color/holo_green_light"></solid>
+    <solid android:color="#BEF895"></solid>
 
     <!-- The radius makes the corners rounded -->
     <corners
