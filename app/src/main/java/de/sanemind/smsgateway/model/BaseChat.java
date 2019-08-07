@@ -86,10 +86,23 @@ public abstract class BaseChat implements Comparable<BaseChat> {
 //        if (followingMessages.size() > 0)
 //            followingMessages.first()
         BaseMessage refMessage = getMessageFromID(message.getID());
-        if (message.getStatus() != MessageStatus.EDITED || refMessage == null || refMessage.getStatus() != MessageStatus.EDITED) {
-            if (refMessage != null)
-                messages.remove(refMessage);
+        if (refMessage == null) {
             messages.add(message);
+        } else if (refMessage != null) {
+            if (message.getStatus() == MessageStatus.READ) {
+                if (refMessage.getStatus() != MessageStatus.DELETED && refMessage.getStatus() != MessageStatus.EDITED)
+                    refMessage.setStatus(MessageStatus.READ);
+            }
+            else if (message.getStatus() == MessageStatus.EDITED) {
+                if (!message.getCreatedAt().before(refMessage.getCreatedAt())) {
+                    refMessage.setMessage(message.getMessage());
+                    if (refMessage.getStatus() != MessageStatus.DELETED)
+                        refMessage.setStatus(MessageStatus.EDITED);
+                }
+            }
+            else if (message.getStatus() == MessageStatus.DELETED) {
+                refMessage.setStatus(MessageStatus.DELETED);
+            }
         }
 //        if (position == -1)
 //            messages.add(0, message);

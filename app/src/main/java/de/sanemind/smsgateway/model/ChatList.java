@@ -37,7 +37,7 @@ public class ChatList {
             return g;
         else {
             g = new GroupChat(this, groupName, groupIdentifier, isChannel);
-            ChatList.add(g);
+            ChatList.add(0, g);
             return g;
         }
     }

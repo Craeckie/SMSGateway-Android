@@ -99,6 +99,9 @@ class ReceivedMessageHolder extends RecyclerView.ViewHolder {
                 case FORWARDED:
                     receivedImage.setImageResource(R.drawable.ic_double_check_black_24dp);
                     break;
+                case READ:
+                    receivedImage.setImageResource(R.drawable.ic_double_check_blue_24dp);
+                    break;
                 case DELETED:
                     receivedImage.setImageResource(android.R.drawable.ic_delete);
                     break;

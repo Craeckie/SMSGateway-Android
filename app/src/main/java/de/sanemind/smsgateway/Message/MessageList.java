@@ -241,10 +241,27 @@ public class MessageList {
 //                }
 //            }
 //            if (!foundEditedMessage)
-                if (msg != null) {
-                    BaseChat chat = msg.getChat();
-                    if (chat != null) // Is message disposable?
-                        msg.getChat().addMessage(msg);
+                    if (msg != null) {
+
+                        if (msg.getStatus() == MessageStatus.DELETED) {
+                            List<BaseChat> chats = msg.getChatList(context).getAllChats();
+                            int counter = 0;
+                            for (BaseChat c : chats) {
+                                BaseMessage ref_msg = c.getMessageFromID(msg.getID());
+                                if (ref_msg != null) {
+                                    ref_msg.setStatus(MessageStatus.DELETED);
+                                    msg = ref_msg;
+                                    break;
+                                }
+                                // Only the 20 last chats
+                                if (counter >= 20)
+                                    break;
+                                counter++;
+                            }
+                        } else {
+                            BaseChat chat = msg.getChat();
+                            if (chat != null) // Is message disposable?
+                                msg.getChat().addMessage(msg);
 //                msg.getChat().addMessage(msg, 0);
 //            messages.add(msg);
 //            if (PhoneNumberUtils.compare(from, GatewayNumber)) {
@@ -252,7 +269,8 @@ public class MessageList {
 //            } else { //else if (PhoneNumberUtils.compare(from, UserChat.currentUser.phoneNumber)) {
 //                mMessageAdapter.getmMessageList().add(new UserMessage(body, ChatList.get_or_create(from), new Date()));
 //            }
-                }
+                        }
+                    }
             }
         } while (smsInboxCursor.moveToNext());
         smsInboxCursor.close();

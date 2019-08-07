@@ -98,10 +98,11 @@ public class GatewayUtils {
         MessageStatus status = MessageStatus.FORWARDED;
 
         String[] lines = body.split("\n");
+        String identifier = null;
+        String from = null;
+        String to = null;
         if (lines.length > 2) {
-            String identifier = lines[0].trim();
-            String from = null;
-            String to = null;
+            identifier = lines[0].trim();
             String type = null;
 //            String group = null;
 //            String channel = null;
@@ -174,7 +175,7 @@ public class GatewayUtils {
                     }
                 } else if (line.startsWith("Status: ")) {
                     String statusString = line.substring("Status: ".length());
-                    status = MessageStatus.valueOf(statusString.toLowerCase());
+                    status = MessageStatus.valueOf(statusString.toUpperCase());
                     if (status == MessageStatus.FORWARDED) {
                         // Ignore the messages just indicating that this message was about to be sent to TG
                         return new UserMessage(Long.MIN_VALUE, new Date(0), "", "", null, false, MessageStatus.FORWARDED);
@@ -294,11 +295,17 @@ public class GatewayUtils {
             }
         }
         if (message == null) {
+            //TODO: only temporary
+            if (status == MessageStatus.READ)
+                if (to == null && from == null)
+                    return null;
+                else
+                    Log.d("GU", message.getMessage());
             message = new UserMessage(
                     ID,
                     receivedDate,
                     body,
-                    "SMS",
+                    identifier,
                     Messengers.getSMS(context).get_or_create_user(context, phoneNumber, phoneNumber, phoneNumber),
                     isSent,
                     status

@@ -6,5 +6,18 @@ public enum MessageStatus {
     FORWARDED,
     READ,
     EDITED,
-    DELETED
+    DELETED,
+//    SENT("sent"),
+//    RECEIVED("received"),
+//    FORWARDED("processed"),
+//    READ("read"),
+//    EDITED("edited"),
+//    DELETED("deleted");
+//
+//    private String name;
+//
+//    MessageStatus(String name) {
+//        this.name = name;
+//    }
+
 }
