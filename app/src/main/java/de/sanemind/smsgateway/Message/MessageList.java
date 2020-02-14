@@ -197,21 +197,22 @@ public class MessageList {
 
     private static void getMessages(Context context, String uri, boolean isSent, boolean parseMessages) {
 //        List<BaseMessage> messages = new LinkedList<>();
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, -28);
+        Date timeLimit = cal.getTime();
+
         String gatewayNumber = PreferenceManager.getDefaultSharedPreferences(context).getString("edit_text_preference_phone_gateway", null);
-        Cursor smsInboxCursor = context.getContentResolver().query(Uri.parse(uri), null, null, null, "date");
+        Cursor smsInboxCursor = context.getContentResolver().query(Uri.parse(uri), new String[] {"body", "address", "date"}, "date >= " + timeLimit.getTime(), null,"date");
         int indexBody = smsInboxCursor.getColumnIndex("body");
         int indexAddress = smsInboxCursor.getColumnIndex("address");
         int indexDate = smsInboxCursor.getColumnIndex("date");
         if (indexBody < 0 || !smsInboxCursor.moveToFirst())
             return;
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, -14);
-        Date timeLimit = cal.getTime();
         do {
             String dateStr = smsInboxCursor.getString(indexDate);
             Long dateTimestamp = Long.parseLong(dateStr);
             //if (date.after(timeLimit)) {
-            if (dateTimestamp >= timeLimit.getTime()) {
+//            if (dateTimestamp >= timeLimit.getTime()) {
                 cal.setTimeInMillis(dateTimestamp);
                 Date date = cal.getTime();
                 String address = smsInboxCursor.getString(indexAddress);
@@ -271,7 +272,7 @@ public class MessageList {
 //                mMessageAdapter.getmMessageList().add(new UserMessage(body, ChatList.get_or_create(from), new Date()));
 //            }
                         }
-                    }
+//                    }
             }
         } while (smsInboxCursor.moveToNext());
         smsInboxCursor.close();
