@@ -27,7 +27,7 @@ public class Messengers {
             chatList.add(new ChatList("TG", "Telegram", contactsLoader));
             chatList.add(new ChatList("FB", "Facebook", contactsLoader));
             chatList.add(new ChatList("SG", "Signal", contactsLoader));
-            chatList.add(new ChatList("SL", "Slack", contactsLoader));
+            chatList.add(new ChatList("MX", "Matrix", contactsLoader));
             chatList.add(new ChatList("EM", "E-Mail", contactsLoader));
             chatList.add(SMS);
 
