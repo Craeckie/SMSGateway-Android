@@ -65,7 +65,10 @@ public class Messengers {
     }
 
     public static int count() {
-        return chatMap.size();
+        if (chatMap == null)
+            return 0;
+        else
+            return chatMap.size();
     }
 
     public static ChatList listAtIndex(Context context, int index) {
