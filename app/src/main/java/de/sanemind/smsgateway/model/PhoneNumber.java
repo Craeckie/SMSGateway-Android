@@ -2,7 +2,7 @@ package de.sanemind.smsgateway.model;
 
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.telephony.PhoneNumberUtils;
 
 import de.sanemind.smsgateway.Utils;

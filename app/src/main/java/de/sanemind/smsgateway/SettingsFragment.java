@@ -2,7 +2,7 @@ package de.sanemind.smsgateway;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 public class SettingsFragment extends PreferenceFragment {
     @Override

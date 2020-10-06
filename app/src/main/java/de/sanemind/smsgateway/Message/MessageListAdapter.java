@@ -1,7 +1,7 @@
 package de.sanemind.smsgateway.Message;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +19,7 @@ import de.sanemind.smsgateway.model.GroupChat;
 import de.sanemind.smsgateway.model.GroupMessage;
 import de.sanemind.smsgateway.model.UserChat;
 
-public class MessageListAdapter extends android.support.v7.widget.RecyclerView.Adapter {
+public class MessageListAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_MESSAGE_SENT = 1;
     private static final int VIEW_TYPE_USER_MESSAGE_RECEIVED = 2;
     private static final int VIEW_TYPE_GROUP_MESSAGE_RECEIVED = 3;
