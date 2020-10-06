@@ -110,10 +110,11 @@ public abstract class BaseMessage implements Comparable<BaseMessage> {
     public int compareTo(@NonNull BaseMessage o) {
         long oID = o.getID();
         if (oID != -1 || ID != -1) {
-            return oID > ID ? +1 : oID < ID ? -1 : 0;
-        } else  {
-            return o.getCreatedAt().compareTo(this.getCreatedAt());
+            if (oID == ID)
+                return 0;
+            //return oID > ID ? +1 : oID < ID ? -1 : 0;
         }
+        return o.getCreatedAt().compareTo(this.getCreatedAt());
     }
 
     @Override
